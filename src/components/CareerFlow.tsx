@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, ArrowLeft, Check, Award, RotateCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, RotateCcw } from 'lucide-react';
 import { SKILLS_DATA, INTERESTS_DATA, CAREERS_DATA, WORK_STYLES } from '../data/gameData';
-import { CareerMatch, TeenPassportData } from '../types';
+import { CareerMatch } from '../types';
 import { playClickSound, playFanfare } from '../utils/audio';
 
 const AVATARS = [
@@ -29,14 +29,12 @@ interface CareerFlowProps {
   onEarnXp: (amount: number, reason: string) => void;
   onRestart: () => void;
   onOpenCareerDetails: (career: CareerMatch) => void;
-  onOpenCertificate: (passport: TeenPassportData, topCareer: CareerMatch) => void;
 }
 
 export const CareerFlow: React.FC<CareerFlowProps> = ({
   onEarnXp,
   onRestart,
   onOpenCareerDetails,
-  onOpenCertificate,
 }) => {
   const [step, setStep] = useState<number>(0);
   const [name, setName] = useState<string>('');
@@ -44,7 +42,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedWorkStyle, setSelectedWorkStyle] = useState<string>('style-builder');
-  const [passportData, setPassportData] = useState<TeenPassportData | null>(null);
   const [rewardedSteps, setRewardedSteps] = useState<number[]>([]);
   const [idleLeft, setIdleLeft] = useState<number>(IDLE_RESET_SECONDS);
 
@@ -87,25 +84,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   const topCareer = rankedMatches[0]?.career;
 
   const finish = () => {
-    const newPassport: TeenPassportData = {
-      teenName: name.trim(),
-      teenAvatar: avatar,
-      selectedSkillIds: selectedSkills,
-      selectedInterestIds: selectedInterests,
-      workStyle: selectedWorkStyle,
-      generatedDate: new Date().toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }),
-      passportId: `AFR-${Math.floor(100000 + Math.random() * 900000)}`,
-      totalXp: 500,
-      level: 2,
-      completedQuestsCount: 0,
-      matchesPlayedCount: 1,
-    };
-
-    setPassportData(newPassport);
     setStep(RESULT_STEP);
     setIdleLeft(IDLE_RESET_SECONDS);
 
@@ -152,7 +130,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
     setSelectedSkills([]);
     setSelectedInterests([]);
     setSelectedWorkStyle('style-builder');
-    setPassportData(null);
     setRewardedSteps([]);
     setIdleLeft(IDLE_RESET_SECONDS);
     onRestart();
@@ -223,7 +200,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   }
 
   /* ============================ RESULT ============================ */
-  if (step === RESULT_STEP && passportData && topCareer) {
+  if (step === RESULT_STEP && topCareer) {
     const top = rankedMatches[0];
     const runnersUp = rankedMatches.slice(1, 3);
 
@@ -239,12 +216,12 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
             {/* Who this is */}
             <div className="flex items-center gap-4">
               <span className="w-14 h-14 rounded-2xl bg-brand-tint grid place-items-center text-3xl shrink-0">
-                {passportData.teenAvatar}
+                {avatar}
               </span>
               <div className="min-w-0">
-                <p className="eyebrow">Passport {passportData.passportId}</p>
+                <p className="eyebrow">Your career match</p>
                 <h2 className="text-2xl sm:text-3xl font-bold text-ink mt-1">
-                  {passportData.teenName}, here's your match
+                  {name.trim()}, here's your match
                 </h2>
               </div>
             </div>
@@ -347,25 +324,14 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <button
-                id="btn-restart"
-                onClick={restart}
-                className="btn btn-quiet btn-touch"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span className="hidden sm:inline">Start over</span>
-              </button>
-
-              <button
-                id="btn-print-certificate"
-                onClick={() => onOpenCertificate(passportData, topCareer)}
-                className="btn btn-primary btn-touch"
-              >
-                <Award className="w-5 h-5" />
-                <span>Get my certificate</span>
-              </button>
-            </div>
+            <button
+              id="btn-restart"
+              onClick={restart}
+              className="btn btn-primary btn-touch shrink-0"
+            >
+              <RotateCcw className="w-5 h-5" />
+              <span>Start again</span>
+            </button>
           </div>
         </footer>
       </>
@@ -406,7 +372,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
                   First — what should we call you?
                 </h2>
                 <p className="text-base text-muted mt-2.5">
-                  Your name goes on your certificate.
+                  Just so your results feel like yours.
                 </p>
 
                 <input

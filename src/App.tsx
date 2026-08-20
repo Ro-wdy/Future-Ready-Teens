@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { KioskBar } from './components/KioskBar';
 import { CareerFlow } from './components/CareerFlow';
 import { CareerModal } from './components/CareerModal';
-import { CertificateModal } from './components/CertificateModal';
-import { CareerMatch, TeenPassportData } from './types';
+import { CareerMatch } from './types';
 import { playLevelUpSound } from './utils/audio';
 import { Sparkles } from 'lucide-react';
 
@@ -14,10 +13,6 @@ export default function App() {
   const [totalXp, setTotalXp] = useState<number>(0);
 
   const [selectedCareerForModal, setSelectedCareerForModal] = useState<CareerMatch | null>(null);
-  const [certificateModalData, setCertificateModalData] = useState<{
-    passport: TeenPassportData;
-    career: CareerMatch;
-  } | null>(null);
 
   const [toastMessage, setToastMessage] = useState<{ text: string; xp?: number } | null>(null);
 
@@ -47,7 +42,6 @@ export default function App() {
     setTotalXp(0);
     setToastMessage(null);
     setSelectedCareerForModal(null);
-    setCertificateModalData(null);
   };
 
   return (
@@ -58,9 +52,6 @@ export default function App() {
         onEarnXp={handleEarnXp}
         onRestart={handleRestart}
         onOpenCareerDetails={(career) => setSelectedCareerForModal(career)}
-        onOpenCertificate={(passport, topCareer) =>
-          setCertificateModalData({ passport, career: topCareer })
-        }
       />
 
       {/* XP toast */}
@@ -86,12 +77,6 @@ export default function App() {
       <CareerModal
         career={selectedCareerForModal}
         onClose={() => setSelectedCareerForModal(null)}
-      />
-
-      <CertificateModal
-        passport={certificateModalData?.passport || null}
-        career={certificateModalData?.career || null}
-        onClose={() => setCertificateModalData(null)}
       />
     </div>
   );

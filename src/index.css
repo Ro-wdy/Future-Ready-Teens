@@ -175,26 +175,6 @@
   }
 }
 
-/* Keep only the certificate on the page when printing. */
-@media print {
-  body {
-    background: #fff;
-  }
-  body * {
-    visibility: hidden;
-  }
-  #printable-certificate,
-  #printable-certificate * {
-    visibility: visible;
-  }
-  #printable-certificate {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    width: 100%;
-  }
-}
-
 @layer components {
   /* ---- Kiosk scaffolding ------------------------------------------ */
   /* The exercise fills the screen; only the answer area may scroll. */
