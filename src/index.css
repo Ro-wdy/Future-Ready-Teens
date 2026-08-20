@@ -7,31 +7,37 @@
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Neutral canvas — warm, quiet, Notion-like */
-  --color-canvas: #FBFAF9;
+  /* ---- Absa palette, sampled from absabank.co.ke ------------------ */
+  /* Warm neutrals — Absa's surfaces are warm grey, never cool slate.  */
+  --color-canvas: #F9F8F8;
   --color-surface: #FFFFFF;
-  --color-sunken: #F5F4F2;
+  --color-sunken: #F4F3F3;
+  --color-line: #E3E2E2;
 
-  /* Ink scale */
-  --color-ink: #1A1A1F;
-  --color-muted: #6C6C78;
-  --color-faint: #9C9CA8;
-  --color-line: #ECEBE8;
+  /* Ink — Absa's body copy is a warm near-black, not pure black. */
+  --color-ink: #2D2323;
+  --color-muted: #524A4A;
+  --color-faint: #939191;
 
-  /* Absa red — reserved for active states and CTAs */
-  --color-brand: #DC0032;
-  --color-brand-deep: #B00027;
-  --color-brand-tint: #FFF0F3;
-  --color-brand-line: #FFD4DD;
+  /* Absa red (berry) — active states and CTAs only. */
+  --color-brand: #AF144B;
+  --color-brand-deep: #95052A;
+  --color-brand-dark: #77021E;
+  --color-brand-tint: #FBEAF0;
 
-  /* Supporting accents, used sparingly */
-  --color-gold: #F0A500;
-  --color-gold-tint: #FFF8E8;
-  --color-grass: #10A45B;
-  --color-grass-tint: #ECFAF2;
+  /* Absa orange — rewards and highlights, used sparingly. */
+  --color-accent: #FA551E;
+  --color-accent-tint: #FED6C9;
 
-  --shadow-soft: 0 1px 2px rgba(20, 20, 30, 0.04), 0 6px 18px -10px rgba(20, 20, 30, 0.12);
-  --shadow-lift: 0 2px 4px rgba(20, 20, 30, 0.05), 0 16px 32px -16px rgba(20, 20, 30, 0.22);
+  /* Absa blue — quiet informational support. */
+  --color-info: #0074A6;
+
+  /* Success, tuned warm to sit with the palette. */
+  --color-grass: #0B7A55;
+  --color-grass-tint: #E9F6F1;
+
+  --shadow-soft: 0 1px 2px rgba(45, 35, 35, 0.04), 0 6px 18px -10px rgba(45, 35, 35, 0.14);
+  --shadow-lift: 0 2px 4px rgba(45, 35, 35, 0.05), 0 16px 32px -16px rgba(45, 35, 35, 0.24);
   --shadow-pick: 0 0 0 2px var(--color-brand) inset;
 
   --breakpoint-3xl: 1920px;
@@ -103,7 +109,7 @@
   }
   .btn-primary {
     @apply bg-brand text-white hover:bg-brand-deep;
-    box-shadow: 0 1px 2px rgba(176, 0, 39, 0.24), 0 8px 20px -8px rgba(220, 0, 50, 0.5);
+    box-shadow: 0 1px 2px rgba(119, 2, 30, 0.26), 0 8px 20px -8px rgba(175, 20, 75, 0.5);
   }
   .btn-primary:disabled {
     @apply bg-sunken text-faint cursor-not-allowed active:scale-100;
@@ -186,5 +192,58 @@
     inset: 0;
     margin: 0;
     width: 100%;
+  }
+}
+
+@layer components {
+  /* ---- Kiosk scaffolding ------------------------------------------ */
+  /* The exercise fills the screen; only the answer area may scroll. */
+  .kiosk {
+    height: 100dvh;
+    @apply flex flex-col overflow-hidden bg-canvas;
+  }
+  /* Flex column + `m-auto` on the child centres a short question vertically
+     while still letting a tall one scroll from the top rather than clipping. */
+  .kiosk-body {
+    @apply flex-1 min-h-0 overflow-y-auto flex flex-col;
+  }
+
+  /* Touch targets sized for a finger on a wall-mounted screen. */
+  .btn-touch {
+    @apply px-8 py-4 text-base sm:text-lg rounded-full;
+    min-height: 3.75rem;
+  }
+
+  /* Helper line under an answer card's label. */
+  .pick-sub {
+    @apply block text-sm text-muted mt-1.5 leading-snug line-clamp-2;
+  }
+
+  /* Step progress rail */
+  .rail {
+    @apply h-1 rounded-full bg-line overflow-hidden;
+  }
+  .rail-fill {
+    @apply h-full rounded-full bg-brand;
+  }
+}
+
+/* The 16-option question is the tallest screen in the exercise. Anything short
+   of a portrait kiosk drops the answer-card helper lines and tightens the grid
+   so a whole question still fits without scrolling. Tall portrait displays have
+   the room, so they keep the fuller, more explanatory layout. */
+@media (max-height: 1100px) {
+  .pick-sub {
+    display: none;
+  }
+  .q-grid {
+    gap: 0.5rem;
+  }
+  .q-grid .pick {
+    padding: 0.75rem;
+  }
+  .q-grid .pick-label {
+    font-size: 0.9375rem;
+    margin-top: 0.5rem;
   }
 }

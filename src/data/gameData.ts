@@ -30,7 +30,7 @@ export const SKILLS_DATA: SkillItem[] = [
     tagline: 'Safeguard digital accounts, networks, and data.',
     description: 'Auditing security, blocking scams, and fortifying digital identity.',
     exampleActivity: 'Auditing school WiFi safety and running phishing awareness.',
-    color: '#DC0032'
+    color: '#AF144B'
   },
   {
     id: 'skill-data-sleuth',
@@ -768,7 +768,7 @@ export const ACHIEVEMENT_BADGES: AchievementBadge[] = [
     title: 'Career Explorer',
     description: 'Explored comprehensive teen career guidance roadmaps.',
     icon: 'Compass',
-    color: '#DC0032'
+    color: '#AF144B'
   },
   {
     id: 'badge-passport-certified',

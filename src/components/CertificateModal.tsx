@@ -54,31 +54,31 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         {/* Printable Certificate Canvas */}
         <div 
           id="printable-certificate"
-          className="p-8 sm:p-12 bg-[#FFFDFD] relative border-4 border-[#4A0017] m-5 rounded-2xl print:m-0 print:p-8"
+          className="p-8 sm:p-12 bg-[#FFFDFD] relative border-4 border-[#77021E] m-5 rounded-2xl print:m-0 print:p-8"
         >
           {/* Inner gold/crimson border frame */}
-          <div className="absolute inset-2.5 border border-amber-400/70 rounded-xl pointer-events-none" />
+          <div className="absolute inset-2.5 border border-[#FA551E]/50 rounded-xl pointer-events-none" />
 
           {/* Watermark Absa background */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-9xl font-bold text-[#DC0032]">
+          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-9xl font-bold text-[#AF144B]">
             absa
           </div>
 
           {/* Certificate Header */}
           <div className="text-center relative z-10 space-y-3">
             {/* Absa Red Brand Circle */}
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#DC0032] text-white font-bold text-xl mx-auto">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#AF144B] text-white font-bold text-xl mx-auto">
               ab
             </div>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#DC0032]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#AF144B]">
                 ABSA FUTURE READY TEENS EVENT 2026
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#4A0017] tracking-tight font-serif mt-2">
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#77021E] tracking-tight font-serif mt-2">
                 Certificate of Future Readiness
               </h2>
-              <p className="text-xs text-slate-500 mt-2 tabular-nums">
+              <p className="text-xs text-[#939191] mt-2 tabular-nums">
                 Passport Serial: {passport.passportId} • Nairobi, Kenya
               </p>
             </div>
@@ -86,30 +86,30 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
           {/* Recipient Presentation */}
           <div className="text-center my-6 relative z-10 space-y-3">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-[0.1em]">
+            <p className="text-xs font-medium text-[#939191] uppercase tracking-[0.1em]">
               This is proudly presented to:
             </p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 border-b-2 border-[#DC0032] pb-2.5 inline-block px-8">
+            <h3 className="text-2xl sm:text-3xl font-bold text-[#2D2323] border-b-2 border-[#AF144B] pb-2.5 inline-block px-8">
               {passport.teenName} {passport.teenAvatar}
             </h3>
 
-            <p className="text-xs sm:text-sm text-slate-700 max-w-xl mx-auto leading-relaxed pt-2">
-              For actively completing the <strong>Career Match-Up Discovery</strong> and demonstrating that <span className="text-[#DC0032] font-bold">careers are built from skills, not job titles alone</span>.
+            <p className="text-xs sm:text-sm text-[#524A4A] max-w-xl mx-auto leading-relaxed pt-2">
+              For actively completing the <strong>Career Match-Up Discovery</strong> and demonstrating that <span className="text-[#AF144B] font-bold">careers are built from skills, not job titles alone</span>.
             </p>
           </div>
 
           {/* Core Strengths & Career Archetype Summary */}
           <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto my-8 relative z-10 text-left">
             <div>
-              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-slate-400 block">
+              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-[#939191] block">
                 Primary Superpowers:
               </span>
-              <ul className="text-sm font-medium text-slate-800 mt-2 space-y-1">
+              <ul className="text-sm font-medium text-[#2D2323] mt-2 space-y-1">
                 {passport.selectedSkillIds.map((sId) => {
                   const s = SKILLS_DATA.find((sk) => sk.id === sId);
                   return (
                     <li key={sId} className="flex items-center gap-1">
-                      <span className="text-[#DC0032] font-bold">•</span>
+                      <span className="text-[#AF144B] font-bold">•</span>
                       <span>{s?.name.split(' ')[0]}</span>
                     </li>
                   );
@@ -118,42 +118,42 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-slate-400 block">
+              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-[#939191] block">
                 Prime Career Synergy:
               </span>
-              <p className="text-sm font-semibold text-[#DC0032] mt-2">
+              <p className="text-sm font-semibold text-[#AF144B] mt-2">
                 {career.title}
               </p>
-              <span className="text-[10px] text-slate-600 font-medium block mt-0.5">
+              <span className="text-[10px] text-[#524A4A] font-medium block mt-0.5">
                 Pillar: {career.absaPillar}
               </span>
             </div>
           </div>
 
           {/* Signature & Seal Block */}
-          <div className="flex items-end justify-between pt-6 border-t border-slate-200 relative z-10 text-xs">
+          <div className="flex items-end justify-between pt-6 border-t border-[#E3E2E2] relative z-10 text-xs">
             <div className="text-left space-y-1">
-              <div className="font-serif italic text-slate-800 text-sm font-bold">
+              <div className="font-serif italic text-[#2D2323] text-sm font-bold">
                 Absa Youth Empowerment Director
               </div>
-              <p className="text-[10px] text-slate-500 font-medium">
+              <p className="text-[10px] text-[#939191] font-medium">
                 Absa Bank Kenya PLC
               </p>
             </div>
 
             {/* Official Seal */}
-            <div className="w-16 h-16 rounded-full border-2 border-dashed border-amber-500 bg-amber-50 flex flex-col items-center justify-center text-center shadow-xs">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              <span className="text-[8px] font-semibold uppercase tracking-wide text-amber-800 leading-tight mt-0.5">
+            <div className="w-16 h-16 rounded-full border-2 border-dashed border-[#FA551E]/60 bg-[#FED6C9]/40 flex flex-col items-center justify-center text-center shadow-xs">
+              <Sparkles className="w-4 h-4 text-[#FA551E]" />
+              <span className="text-[8px] font-semibold uppercase tracking-wide text-[#95052A] leading-tight mt-0.5">
                 FUTURE READY
               </span>
             </div>
 
             <div className="text-right space-y-1">
-              <p className="text-slate-800 font-bold text-[11px]">
+              <p className="text-[#2D2323] font-bold text-[11px]">
                 {passport.generatedDate}
               </p>
-              <p className="text-[10px] text-slate-500 font-medium">
+              <p className="text-[10px] text-[#939191] font-medium">
                 Verified Event Date
               </p>
             </div>

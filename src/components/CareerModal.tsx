@@ -74,7 +74,7 @@ export const CareerModal: React.FC<CareerModalProps> = ({ career, onClose }) => 
                     <div key={sId} className="rounded-2xl bg-sunken p-4">
                       <span
                         className="block w-2.5 h-2.5 rounded-full"
-                        style={{ backgroundColor: skill?.color || '#DC0032' }}
+                        style={{ backgroundColor: skill?.color || '#AF144B' }}
                       />
                       <h5 className="font-semibold text-ink text-sm mt-2.5 leading-snug">
                         {skill?.name}
