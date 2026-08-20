@@ -1,16 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  X, 
-  Sparkles, 
-  Target, 
-  BookOpen, 
-  CheckCircle2, 
-  GraduationCap, 
-  Coins, 
-  Compass,
-  ArrowRight
-} from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
 import { CareerMatch } from '../types';
 import { SKILLS_DATA } from '../data/gameData';
 import { playClickSound } from '../utils/audio';
@@ -25,58 +15,48 @@ export const CareerModal: React.FC<CareerModalProps> = ({ career, onClose }) => 
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-ink/40 backdrop-blur-sm"
+        onClick={() => { playClickSound(); onClose(); }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          transition={{ duration: 0.2 }}
-          className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-rose-100 shadow-2xl relative"
+          exit={{ opacity: 0, scale: 0.97, y: 16 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          onClick={(e) => e.stopPropagation()}
+          className="bg-surface rounded-3xl max-w-2xl w-full max-h-[88vh] overflow-y-auto shadow-lift relative"
         >
-          {/* Modal Header */}
-          <div className="bg-gradient-to-br from-[#4A0017] via-[#2E000C] to-slate-950 text-white p-6 sm:p-7 relative overflow-hidden rounded-t-3xl">
-            <div className="absolute right-0 top-0 w-48 h-48 bg-[#DC0032]/25 rounded-full blur-2xl pointer-events-none" />
-
-            {/* Close button */}
+          {/* Sticky top bar */}
+          <div className="sticky top-0 z-10 bg-surface/90 backdrop-blur-md px-6 sm:px-8 pt-6 pb-4 flex items-start justify-between gap-4 border-b border-line">
+            <div className="min-w-0">
+              <p className="eyebrow truncate">{career.absaPillar}</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-ink mt-1.5 leading-tight">
+                {career.title}
+              </h3>
+            </div>
             <button
               onClick={() => { playClickSound(); onClose(); }}
-              className="absolute right-4 top-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="w-9 h-9 rounded-full grid place-items-center text-muted hover:text-ink hover:bg-sunken transition-colors shrink-0"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
-
-            <div className="space-y-2 relative z-10">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#DC0032] text-white px-2.5 py-0.5 rounded-full">
-                  {career.absaPillar}
-                </span>
-                <span className="text-xs text-amber-300 font-semibold bg-amber-500/20 px-2 py-0.5 rounded-md">
-                  ⚡ {career.futureOutlook}
-                </span>
-              </div>
-
-              <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
-                {career.title}
-              </h3>
-
-              <p className="text-xs sm:text-sm text-rose-100/90 leading-relaxed font-normal">
-                {career.tagline}
-              </p>
-            </div>
           </div>
 
-          {/* Modal Body */}
-          <div className="p-6 space-y-5">
-            {/* High School Subjects Prerequisite */}
+          <div className="px-6 sm:px-8 py-7 space-y-8">
+            <div>
+              <p className="text-base text-muted leading-relaxed">{career.tagline}</p>
+              <p className="text-sm font-medium text-grass mt-3">{career.futureOutlook}</p>
+            </div>
+
+            {/* Subjects */}
             {career.subjectsNeeded && (
-              <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-900 mb-1.5">
-                  <GraduationCap className="w-4 h-4 text-amber-700" />
-                  <span>Recommended High School Subjects:</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
+              <div>
+                <h4 className="eyebrow">Recommended high school subjects</h4>
+                <div className="flex flex-wrap gap-1.5 mt-3">
                   {career.subjectsNeeded.map((sub, idx) => (
-                    <span key={idx} className="text-xs font-bold bg-white text-slate-800 border border-amber-200 px-2.5 py-0.5 rounded-md">
+                    <span key={idx} className="text-sm font-medium text-ink bg-sunken px-3 py-1.5 rounded-full">
                       {sub}
                     </span>
                   ))}
@@ -84,83 +64,73 @@ export const CareerModal: React.FC<CareerModalProps> = ({ career, onClose }) => 
               </div>
             )}
 
-            {/* Skill Fusion Blueprint */}
+            {/* Skill blueprint */}
             <div>
-              <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5 mb-2">
-                <Sparkles className="w-4 h-4 text-[#DC0032]" />
-                <span>Skill Synergy Blueprint:</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <h4 className="eyebrow">Skill synergy blueprint</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
                 {career.requiredSkillIds.map((sId) => {
                   const skill = SKILLS_DATA.find((s) => s.id === sId);
                   return (
-                    <div key={sId} className="bg-rose-50/50 border border-rose-200 rounded-xl p-2.5">
-                      <span 
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase text-white"
+                    <div key={sId} className="rounded-2xl bg-sunken p-4">
+                      <span
+                        className="block w-2.5 h-2.5 rounded-full"
                         style={{ backgroundColor: skill?.color || '#DC0032' }}
-                      >
-                        {skill?.category.replace('_', ' ')}
-                      </span>
-                      <h5 className="font-bold text-slate-900 text-xs mt-1">
+                      />
+                      <h5 className="font-semibold text-ink text-sm mt-2.5 leading-snug">
                         {skill?.name}
                       </h5>
+                      <p className="text-xs text-muted mt-1 capitalize">
+                        {skill?.category.replace('_', ' ')}
+                      </p>
                     </div>
                   );
                 })}
               </div>
-              <p className="text-xs text-slate-600 mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <strong className="text-slate-900">Why this matters:</strong> {career.matchExplanation}
+              <p className="text-sm text-muted mt-4 leading-relaxed">
+                <span className="font-semibold text-ink">Why this matters · </span>
+                {career.matchExplanation}
               </p>
             </div>
 
-            {/* Daily Mission */}
+            {/* Daily mission */}
             <div>
-              <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5 mb-1">
-                <Target className="w-4 h-4 text-[#DC0032]" />
-                <span>Daily Mission Snapshot</span>
-              </h4>
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                {career.dailyMission}
-              </p>
+              <h4 className="eyebrow">A day in this job</h4>
+              <p className="text-base text-muted leading-relaxed mt-3">{career.dailyMission}</p>
             </div>
 
             {/* Quote */}
-            <blockquote className="text-xs italic text-slate-700 bg-rose-50/50 p-3 rounded-xl border-l-4 border-[#DC0032]">
+            <blockquote className="text-base italic text-ink leading-relaxed border-l-2 border-brand pl-5">
               {career.hybridQuote}
             </blockquote>
 
-            {/* Teen High School Action Roadmap */}
+            {/* Action steps */}
             <div>
-              <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5 mb-2">
-                <BookOpen className="w-4 h-4 text-[#DC0032]" />
-                <span>What To Do In High School Today:</span>
-              </h4>
-              <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-brand shrink-0" />
+                <h4 className="eyebrow">What to do in high school today</h4>
+              </div>
+              <ol className="mt-4 space-y-3.5">
                 {career.teenActionSteps.map((step, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
-                    <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <li key={idx} className="flex items-start gap-3.5">
+                    <span className="w-6 h-6 rounded-full bg-brand-tint text-brand text-xs font-semibold grid place-items-center shrink-0">
                       {idx + 1}
                     </span>
-                    <span className="font-medium text-slate-800">{step}</span>
-                  </div>
+                    <span className="text-sm sm:text-base text-ink leading-relaxed">{step}</span>
+                  </li>
                 ))}
-              </div>
+              </ol>
             </div>
 
-            {/* Bottom Bar: Salary & Close */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            {/* Footer */}
+            <div className="flex items-center justify-between gap-4 pt-6 border-t border-line">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-500 block">
-                  Compensation Tier
-                </span>
-                <span className="text-xs font-bold text-emerald-800">
-                  {career.salaryTier}
-                </span>
+                <p className="eyebrow">Compensation tier</p>
+                <p className="text-sm font-semibold text-ink mt-1">{career.salaryTier}</p>
               </div>
 
               <button
                 onClick={() => { playClickSound(); onClose(); }}
-                className="px-5 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold transition-colors"
+                className="btn btn-dark px-6 py-3 text-sm"
               >
                 Close
               </button>

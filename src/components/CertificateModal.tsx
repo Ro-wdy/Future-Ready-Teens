@@ -23,27 +23,28 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-3xl w-full border border-rose-200 shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-ink/40 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-surface rounded-3xl max-w-3xl w-full shadow-lift overflow-hidden my-auto animate-in zoom-in-95 duration-200">
+
         {/* Modal Top Control Bar (Hidden when printing) */}
-        <div className="bg-slate-900 text-white px-6 py-3 flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-2 text-xs font-bold text-rose-200">
-            <Award className="w-4 h-4 text-amber-400" />
+        <div className="px-6 py-4 flex items-center justify-between gap-4 border-b border-line print:hidden">
+          <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <Award className="w-4 h-4 text-brand shrink-0" />
             <span>Official Absa Event Certificate</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#DC0032] hover:bg-[#B40026] text-white text-xs font-bold transition-all shadow-xs"
+              className="btn btn-primary px-4 py-2.5 text-sm"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               <span>Print / Save PDF</span>
             </button>
             <button
               onClick={() => { playClickSound(); onClose(); }}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="w-9 h-9 rounded-full grid place-items-center text-muted hover:text-ink hover:bg-sunken transition-colors"
+              aria-label="Close"
             >
               <X className="w-4 h-4" />
             </button>
@@ -53,31 +54,31 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         {/* Printable Certificate Canvas */}
         <div 
           id="printable-certificate"
-          className="p-8 sm:p-12 bg-[#FFFDFD] relative border-8 border-[#4A0017] m-4 rounded-2xl print:m-0 print:border-8 print:p-8"
+          className="p-8 sm:p-12 bg-[#FFFDFD] relative border-4 border-[#4A0017] m-5 rounded-2xl print:m-0 print:p-8"
         >
           {/* Inner gold/crimson border frame */}
-          <div className="absolute inset-3 border-2 border-amber-400/80 rounded-xl pointer-events-none" />
+          <div className="absolute inset-2.5 border border-amber-400/70 rounded-xl pointer-events-none" />
 
           {/* Watermark Absa background */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-9xl font-black text-[#DC0032]">
+          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-9xl font-bold text-[#DC0032]">
             absa
           </div>
 
           {/* Certificate Header */}
           <div className="text-center relative z-10 space-y-3">
             {/* Absa Red Brand Circle */}
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#DC0032] text-white font-black text-2xl shadow-md mx-auto">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#DC0032] text-white font-bold text-xl mx-auto">
               ab
             </div>
 
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#DC0032]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#DC0032]">
                 ABSA FUTURE READY TEENS EVENT 2026
               </p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#4A0017] tracking-tight font-serif mt-1">
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#4A0017] tracking-tight font-serif mt-2">
                 Certificate of Future Readiness
               </h2>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
+              <p className="text-xs text-slate-500 mt-2 tabular-nums">
                 Passport Serial: {passport.passportId} • Nairobi, Kenya
               </p>
             </div>
@@ -85,10 +86,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
           {/* Recipient Presentation */}
           <div className="text-center my-6 relative z-10 space-y-3">
-            <p className="text-xs font-medium text-slate-600 uppercase tracking-wider">
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-[0.1em]">
               This is proudly presented to:
             </p>
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 border-b-2 border-[#DC0032] pb-2 inline-block px-8">
+            <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 border-b-2 border-[#DC0032] pb-2.5 inline-block px-8">
               {passport.teenName} {passport.teenAvatar}
             </h3>
 
@@ -98,12 +99,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
 
           {/* Core Strengths & Career Archetype Summary */}
-          <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto my-6 relative z-10 bg-rose-50/50 p-4 rounded-xl border border-rose-100 text-left">
+          <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto my-8 relative z-10 text-left">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
+              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-slate-400 block">
                 Primary Superpowers:
               </span>
-              <ul className="text-xs font-semibold text-slate-800 mt-1 space-y-0.5">
+              <ul className="text-sm font-medium text-slate-800 mt-2 space-y-1">
                 {passport.selectedSkillIds.map((sId) => {
                   const s = SKILLS_DATA.find((sk) => sk.id === sId);
                   return (
@@ -117,10 +118,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
+              <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-slate-400 block">
                 Prime Career Synergy:
               </span>
-              <p className="text-xs font-bold text-[#DC0032] mt-1">
+              <p className="text-sm font-semibold text-[#DC0032] mt-2">
                 {career.title}
               </p>
               <span className="text-[10px] text-slate-600 font-medium block mt-0.5">
@@ -143,7 +144,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Official Seal */}
             <div className="w-16 h-16 rounded-full border-2 border-dashed border-amber-500 bg-amber-50 flex flex-col items-center justify-center text-center shadow-xs">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              <span className="text-[8px] font-black uppercase text-amber-800 leading-tight mt-0.5">
+              <span className="text-[8px] font-semibold uppercase tracking-wide text-amber-800 leading-tight mt-0.5">
                 FUTURE READY
               </span>
             </div>

@@ -1,22 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Sparkles, 
-  Search, 
-  BookOpen, 
-  Compass, 
-  ArrowRight, 
-  CheckCircle2, 
-  GraduationCap, 
-  HelpCircle, 
-  ChevronDown, 
-  ChevronUp, 
-  Layers,
-  Heart,
-  TrendingUp,
-  Award,
-  Zap,
-  Filter
+import {
+  Search,
+  ArrowRight,
+  ChevronDown,
 } from 'lucide-react';
 import { CAREERS_DATA, SKILLS_DATA, TEEN_CAREER_FAQS } from '../data/gameData';
 import { CareerMatch, AbsaPillar } from '../types';
@@ -40,6 +27,45 @@ const PILLARS: { label: string; value: AbsaPillar | 'All'; icon: string }[] = [
   { label: 'Sports & Education', value: 'Education, Sports & Wellness', icon: '🏃🏽' },
 ];
 
+const SUBJECT_CLUSTERS = [
+  {
+    emoji: '🩺',
+    title: 'Medicine & Life Sciences',
+    essential: 'Biology, Chemistry, Math, Physics.',
+    careers: 'Surgeon, Biomedical Scientist, Pediatrician.',
+  },
+  {
+    emoji: '✈️',
+    title: 'Aviation & Engineering',
+    essential: 'Physics, Pure Math, Geography, Computer Studies.',
+    careers: 'Airline Pilot, EV Engineer, Robotics Specialist.',
+  },
+  {
+    emoji: '⚖️',
+    title: 'Law & Public Policy',
+    essential: 'History & Govt, English/Literature, Social Studies.',
+    careers: 'Constitutional Lawyer, Diplomat, Advocate.',
+  },
+  {
+    emoji: '💳',
+    title: 'FinTech & Banking',
+    essential: 'Math, Business Studies, Economics, Computer.',
+    careers: 'FinTech Product Manager, Investment Analyst.',
+  },
+  {
+    emoji: '🎨',
+    title: 'Creative Media & Design',
+    essential: 'Art & Design, Literature, Music, Computer.',
+    careers: 'Film Director, Sustainable Architect, UI/UX Designer.',
+  },
+  {
+    emoji: '🌾',
+    title: 'AgriTech & Food Science',
+    essential: 'Agriculture, Biology, Home Science, Geography.',
+    careers: 'AgriTech Specialist, Executive Chef, Food Scientist.',
+  },
+];
+
 export const TeenCareerSupport: React.FC<TeenCareerSupportProps> = ({
   onOpenCareerDetails,
   onEarnXp,
@@ -53,7 +79,7 @@ export const TeenCareerSupport: React.FC<TeenCareerSupportProps> = ({
 
   // Filter careers based on search, pillar, and skill
   const filteredCareers = CAREERS_DATA.filter((career) => {
-    const matchesSearch = 
+    const matchesSearch =
       career.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       career.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
       career.tagline.toLowerCase().includes(searchQuery.toLowerCase());
@@ -76,108 +102,99 @@ export const TeenCareerSupport: React.FC<TeenCareerSupportProps> = ({
     }
   };
 
+  const SECTIONS: { id: 'catalog' | 'subjects' | 'faq'; label: string }[] = [
+    { id: 'catalog', label: `Career Catalog · ${CAREERS_DATA.length}` },
+    { id: 'subjects', label: 'Subject Guide' },
+    { id: 'faq', label: 'Advisory FAQ' },
+  ];
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Hero Banner: Compact & Impactful */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="bg-gradient-to-r from-[#4A0017] via-[#2E000C] to-slate-900 text-white rounded-3xl p-4 sm:p-6 shadow-lg relative overflow-hidden border border-rose-900/30"
-      >
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#DC0032] text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wide">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Absa Teen Career Support Hub</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl 2xl:text-3xl font-black tracking-tight text-white">
-              Discover Inclusive Careers Built from Real Skills
-            </h2>
-            <p className="text-xs sm:text-sm text-rose-100/90 font-medium leading-normal">
-              Explore 16+ career roadmaps across Medicine, Aviation, Law, Tech, Arts, Agriculture, and Sports with exact school subjects needed.
-            </p>
-          </div>
+    <div className="space-y-10">
+      {/* ---- Hero ---- */}
+      <div className="max-w-3xl">
+        <p className="eyebrow">Absa Teen Career Support Hub</p>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ink mt-3 leading-[1.1]">
+          Careers are built from skills,
+          <br className="hidden sm:block" /> not job titles.
+        </h2>
+        <p className="text-base sm:text-lg text-muted mt-4 leading-relaxed">
+          Explore {CAREERS_DATA.length}+ career roadmaps across Medicine, Aviation, Law, Tech, Arts,
+          Agriculture and Sports — with the exact school subjects you'll need.
+        </p>
+      </div>
 
-          {/* Quick Sub-Navigation Pills */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-white/10 p-1.5 rounded-2xl border border-white/15 backdrop-blur-xs shrink-0">
-            <button
-              onClick={() => { playClickSound(); setActiveTabSection('catalog'); }}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                activeTabSection === 'catalog'
-                  ? 'bg-[#DC0032] text-white shadow-xs'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              Career Catalog ({CAREERS_DATA.length})
-            </button>
-            <button
-              onClick={() => { playClickSound(); setActiveTabSection('subjects'); }}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                activeTabSection === 'subjects'
-                  ? 'bg-[#DC0032] text-white shadow-xs'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              Subject Guide
-            </button>
-            <button
-              onClick={() => { playClickSound(); setActiveTabSection('faq'); }}
-              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                activeTabSection === 'faq'
-                  ? 'bg-[#DC0032] text-white shadow-xs'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              Teen Advisory FAQ
-            </button>
-          </div>
-        </div>
-      </motion.div>
+      {/* ---- Section switcher ---- */}
+      <div className="seg overflow-x-auto scrollbar-none max-w-full">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => { playClickSound(); setActiveTabSection(s.id); }}
+            className={`seg-item ${activeTabSection === s.id ? 'seg-item-on' : ''}`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
 
-      {/* SECTION 1: CAREER CATALOG & 1-CLICK SKILL FILTER */}
+      {/* ================= CATALOG ================= */}
       {activeTabSection === 'catalog' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="space-y-4"
+          className="space-y-8"
         >
-          {/* Quick 1-Click Skill Recommender Chips */}
-          <div className="bg-white rounded-2xl border border-rose-100 p-3.5 sm:p-4 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#DC0032]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  1-Click Skill Filter: Tap a strength to filter careers
-                </h3>
-              </div>
-              {selectedSkillFilter && (
+          {/* Search + result count */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-faint absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search any career — Doctor, Pilot, Lawyer, AI, Chef, Architect…"
+                className="field pl-11 pr-10 text-sm sm:text-base"
+              />
+              {searchQuery && (
                 <button
-                  onClick={() => setSelectedSkillFilter(null)}
-                  className="text-[11px] font-bold text-[#DC0032] hover:underline self-start"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full grid place-items-center text-faint hover:text-ink hover:bg-line transition-colors"
+                  aria-label="Clear search"
                 >
-                  Clear filter (Showing all)
+                  ✕
                 </button>
               )}
             </div>
+            <p className="meta shrink-0 sm:pl-2">
+              <span className="font-semibold text-ink tabular-nums">{filteredCareers.length}</span> careers
+            </p>
+          </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {/* Skill filter — quiet chips, red only when active */}
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className="meta">Filter by a strength you already have</p>
+              {selectedSkillFilter && (
+                <button
+                  onClick={() => setSelectedSkillFilter(null)}
+                  className="text-xs font-semibold text-brand hover:underline shrink-0"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible">
               {SKILLS_DATA.map((skill) => {
                 const isActive = selectedSkillFilter === skill.id;
                 return (
                   <button
                     key={skill.id}
                     onClick={() => handleSelectSkillPill(skill.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 active:scale-95 ${
-                      isActive
-                        ? 'bg-[#DC0032] text-white shadow-xs scale-105'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                    }`}
+                    className={`chip flex items-center gap-2 shrink-0 ${isActive ? 'chip-brand-on' : ''}`}
                   >
-                    <span 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: isActive ? '#FFFFFF' : skill.color }} 
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: isActive ? '#FFFFFF' : skill.color }}
                     />
                     <span>{skill.name}</span>
                   </button>
@@ -186,47 +203,15 @@ export const TeenCareerSupport: React.FC<TeenCareerSupportProps> = ({
             </div>
           </div>
 
-          {/* Search Bar & Pillar Categories */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search any career (e.g. Doctor, Pilot, Lawyer, AI, Chef, Architect)..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-xs sm:text-sm font-medium focus:border-[#DC0032] focus:ring-2 focus:ring-rose-500/20 outline-hidden"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            {/* Results Counter */}
-            <div className="text-xs font-bold text-slate-700 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl whitespace-nowrap shrink-0">
-              Showing <span className="text-[#DC0032] font-black">{filteredCareers.length}</span> Careers
-            </div>
-          </div>
-
-          {/* Pillar Filters Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+          {/* Pillar filter */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1 border-t border-line pt-5 sm:flex-wrap sm:overflow-visible">
             {PILLARS.map((p) => {
               const isSelected = selectedPillar === p.value;
               return (
                 <button
                   key={p.label}
                   onClick={() => { playClickSound(); setSelectedPillar(p.value); }}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 active:scale-95 ${
-                    isSelected
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
+                  className={`chip flex items-center gap-2 shrink-0 ${isSelected ? 'chip-on' : ''}`}
                 >
                   <span>{p.icon}</span>
                   <span>{p.label}</span>
@@ -235,267 +220,164 @@ export const TeenCareerSupport: React.FC<TeenCareerSupportProps> = ({
             })}
           </div>
 
-          {/* Inclusive Career Cards Responsive Large Screen Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 3xl:grid-cols-5 gap-3.5">
+          {/* Career grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-4">
             <AnimatePresence mode="popLayout">
               {filteredCareers.map((career) => (
-                <motion.div
+                <motion.button
                   key={career.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.96 }}
+                  initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="bg-white rounded-2xl border border-slate-200 hover:border-rose-300 p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group"
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => onOpenCareerDetails(career)}
+                  className="panel p-5 text-left flex flex-col hover:shadow-lift hover:-translate-y-0.5 transition-all duration-200 group"
                 >
-                  <div>
-                    {/* Pillar & Outlook Header */}
-                    <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-[#DC0032] px-2 py-0.5 rounded-md truncate max-w-[150px]">
-                        {career.absaPillar}
-                      </span>
-                      <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded-md whitespace-nowrap">
-                        ★ {career.futureOutlook}
-                      </span>
-                    </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="meta">{career.absaPillar}</span>
+                    <span className="text-[11px] font-medium text-grass bg-grass-tint px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
+                      {career.futureOutlook}
+                    </span>
+                  </div>
 
-                    {/* Title & Tagline */}
-                    <h4 className="font-extrabold text-slate-900 text-sm sm:text-base group-hover:text-[#DC0032] transition-colors leading-snug">
-                      {career.title}
-                    </h4>
-                    <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                      {career.tagline}
+                  <h4 className="font-semibold text-ink text-lg mt-3 leading-snug group-hover:text-brand transition-colors">
+                    {career.title}
+                  </h4>
+                  <p className="text-sm text-muted mt-2 leading-relaxed line-clamp-2">
+                    {career.tagline}
+                  </p>
+
+                  <div className="mt-4 space-y-2.5 flex-1">
+                    <p className="text-xs text-muted">
+                      <span className="text-faint">Superpowers · </span>
+                      {career.requiredSkillIds
+                        .map((sId) => SKILLS_DATA.find((sk) => sk.id === sId)?.name.split(' ')[0])
+                        .filter(Boolean)
+                        .join(' · ')}
                     </p>
 
-                    {/* Core Skills Badges */}
-                    <div className="mt-2.5 pt-2 border-t border-slate-100">
-                      <span className="text-[9px] font-bold uppercase text-slate-500 block mb-1">
-                        Core Superpowers:
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {career.requiredSkillIds.map((sId) => {
-                          const s = SKILLS_DATA.find((sk) => sk.id === sId);
-                          return (
-                            <span
-                              key={sId}
-                              className="text-[9px] font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-md"
-                            >
-                              {s?.name.split(' ')[0]}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* High School Subjects Needed */}
                     {career.subjectsNeeded && (
-                      <div className="mt-2">
-                        <span className="text-[9px] font-bold uppercase text-slate-500 block mb-1">
-                          Key High School Subjects:
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {career.subjectsNeeded.map((sub, i) => (
-                            <span key={i} className="text-[9px] font-bold text-amber-900 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-sm">
-                              {sub}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                      <p className="text-xs text-muted">
+                        <span className="text-faint">Subjects · </span>
+                        {career.subjectsNeeded.join(' · ')}
+                      </p>
                     )}
                   </div>
 
-                  {/* Card Footer: Compensation & Explore Action */}
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-600">
-                      {career.salaryTier.split(' ')[0]} tier
-                    </span>
-
-                    <button
-                      onClick={() => onOpenCareerDetails(career)}
-                      className="flex items-center gap-1 text-xs font-bold text-[#DC0032] group-hover:translate-x-0.5 transition-transform bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg"
-                    >
-                      <span>Roadmap</span>
+                  <div className="flex items-center justify-between mt-5 pt-4 border-t border-line">
+                    <span className="meta">{career.salaryTier.split(' ')[0]} tier</span>
+                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand group-hover:gap-2 transition-all">
+                      Roadmap
                       <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    </span>
                   </div>
-                </motion.div>
+                </motion.button>
               ))}
             </AnimatePresence>
           </div>
 
           {filteredCareers.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-3xl border border-slate-200 p-6 space-y-3">
-              <span className="text-3xl">🔍</span>
-              <h4 className="text-sm font-bold text-slate-800">No careers found matching your search</h4>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Try clearing your search query or selecting "All Careers" to view all available pathways.
+            <div className="text-center py-20">
+              <span className="text-4xl">🔍</span>
+              <h4 className="text-lg font-semibold text-ink mt-4">No careers match that search</h4>
+              <p className="text-sm text-muted max-w-sm mx-auto mt-2 leading-relaxed">
+                Try clearing your search or switching back to "All Careers" to see every pathway.
               </p>
               <button
                 onClick={() => { setSearchQuery(''); setSelectedPillar('All'); setSelectedSkillFilter(null); }}
-                className="px-4 py-2 rounded-xl bg-[#DC0032] text-white text-xs font-bold"
+                className="btn btn-primary px-5 py-3 text-sm mt-6"
               >
-                Reset Filters
+                Reset filters
               </button>
             </div>
           )}
         </motion.div>
       )}
 
-      {/* SECTION 2: HIGH SCHOOL SUBJECT SELECTION GUIDE */}
+      {/* ================= SUBJECT GUIDE ================= */}
       {activeTabSection === 'subjects' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="space-y-4"
+          className="space-y-8"
         >
-          <div className="bg-white rounded-3xl border border-rose-100 p-5 sm:p-6 shadow-2xs">
-            <div className="flex items-center gap-2 mb-1.5">
-              <GraduationCap className="w-5 h-5 text-[#DC0032]" />
-              <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                High School Subject Combinations (KCSE / IGCSE / High School)
-              </h3>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 mb-4">
-              Match your high-school elective subjects with your target career cluster:
+          <div className="max-w-2xl">
+            <h3 className="text-2xl font-bold text-ink">
+              High school subject combinations
+            </h3>
+            <p className="text-base text-muted mt-2 leading-relaxed">
+              KCSE / IGCSE / High School — match your elective subjects to the career cluster you're aiming at.
             </p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🩺</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Medicine & Life Sciences</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {SUBJECT_CLUSTERS.map((cluster) => (
+              <div key={cluster.title} className="panel p-6">
+                <span className="text-3xl">{cluster.emoji}</span>
+                <h4 className="font-semibold text-ink text-lg mt-3">{cluster.title}</h4>
+                <div className="mt-4 space-y-2.5 text-sm">
+                  <p className="text-ink leading-relaxed">
+                    <span className="text-faint">Essential · </span>{cluster.essential}
+                  </p>
+                  <p className="text-muted leading-relaxed">
+                    <span className="text-faint">Careers · </span>{cluster.careers}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> Biology, Chemistry, Math, Physics.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> Surgeon, Biomedical Scientist, Pediatrician.
-                </p>
               </div>
-
-              <div className="p-4 rounded-2xl bg-sky-50/60 border border-sky-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">✈️</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Aviation & Engineering</h4>
-                </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> Physics, Pure Math, Geography, Computer Studies.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> Airline Pilot, EV Engineer, Robotics Specialist.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">⚖️</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Law & Public Policy</h4>
-                </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> History & Govt, English/Literature, Social Studies.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> Constitutional Lawyer, Diplomat, Advocate.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">💳</span>
-                  <h4 className="font-bold text-slate-900 text-sm">FinTech & Banking</h4>
-                </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> Math, Business Studies, Economics, Computer.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> FinTech Product Manager, Investment Analyst.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🎨</span>
-                  <h4 className="font-bold text-slate-900 text-sm">Creative Media & Design</h4>
-                </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> Art & Design, Literature, Music, Computer.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> Film Director, Sustainable Architect, UI/UX Designer.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-100 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🌾</span>
-                  <h4 className="font-bold text-slate-900 text-sm">AgriTech & Food Science</h4>
-                </div>
-                <p className="text-xs text-slate-700">
-                  <strong className="text-slate-900">Essential:</strong> Agriculture, Biology, Home Science, Geography.
-                </p>
-                <p className="text-xs text-slate-600">
-                  <strong className="text-slate-800">Careers:</strong> AgriTech Specialist, Executive Chef, Food Scientist.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </motion.div>
       )}
 
-      {/* SECTION 3: TEEN CAREER ADVISORY FAQ */}
+      {/* ================= FAQ ================= */}
       {activeTabSection === 'faq' && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="bg-white rounded-3xl border border-rose-100 p-5 sm:p-6 shadow-2xs space-y-3"
+          className="space-y-8 max-w-3xl"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <HelpCircle className="w-5 h-5 text-[#DC0032]" />
-            <h3 className="text-base sm:text-lg font-bold text-slate-900">
-              Frequently Asked Teen Career Questions
+          <div>
+            <h3 className="text-2xl font-bold text-ink">
+              Questions teens actually ask
             </h3>
+            <p className="text-base text-muted mt-2 leading-relaxed">
+              Answers from Absa career mentors to help you navigate high school and university decisions.
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 mb-3">
-            Answers from Absa career mentors to help you navigate high school and university decisions:
-          </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className="divide-y divide-line border-t border-b border-line">
             {TEEN_CAREER_FAQS.map((faq, index) => {
               const isOpen = activeFaqIndex === index;
               return (
-                <div 
-                  key={index}
-                  className="rounded-2xl border border-slate-200 overflow-hidden transition-all bg-white"
-                >
+                <div key={index}>
                   <button
                     onClick={() => { playClickSound(); setActiveFaqIndex(isOpen ? null : index); }}
-                    className="w-full px-3.5 py-3 text-left flex items-center justify-between gap-2.5 bg-slate-50/70 hover:bg-slate-100 transition-colors"
+                    className="w-full py-5 text-left flex items-start justify-between gap-4 group"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#DC0032]">Q{index + 1}.</span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-900">{faq.q}</span>
-                    </div>
-                    {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-slate-500 shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
-                    )}
+                    <span className={`text-base font-semibold leading-snug transition-colors ${isOpen ? 'text-brand' : 'text-ink group-hover:text-brand'}`}>
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-faint shrink-0 mt-0.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-brand' : ''}`}
+                    />
                   </button>
 
-                  <AnimatePresence>
+                  <AnimatePresence initial={false}>
                     {isOpen && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="px-3.5 py-2.5 bg-white text-xs sm:text-sm text-slate-700 leading-relaxed border-t border-slate-100"
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
                       >
-                        <p>{faq.a}</p>
-                        <span className="inline-block text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md mt-1.5">
-                          Category: {faq.category}
-                        </span>
+                        <div className="pb-6 pr-9 space-y-3">
+                          <p className="text-base text-muted leading-relaxed">{faq.a}</p>
+                          <p className="eyebrow">{faq.category}</p>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

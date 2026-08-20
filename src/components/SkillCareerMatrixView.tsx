@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  Sparkles, 
-  Search, 
-  Filter, 
-  Check, 
-  ArrowRight, 
-  RotateCcw,
-  Zap,
-  Briefcase,
-  SlidersHorizontal
-} from 'lucide-react';
+import { Search, Check, ArrowRight, RotateCcw } from 'lucide-react';
 import { SKILLS_DATA, CAREERS_DATA } from '../data/gameData';
-import { CareerMatch, AbsaPillar } from '../types';
+import { CareerMatch } from '../types';
 import { playClickSound } from '../utils/audio';
 
 interface SkillCareerMatrixViewProps {
@@ -75,84 +65,46 @@ export const SkillCareerMatrixView: React.FC<SkillCareerMatrixViewProps> = ({
     'Education, Sports & Wellness',
   ];
 
+  const hasFilters = activeSkills.length > 0 || selectedPillar !== 'all' || !!searchQuery;
+
   return (
-    <div className="space-y-4">
-      {/* View Title & Core Philosophy */}
-      <div className="bg-white rounded-3xl border border-rose-100 p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-xl bg-rose-50 text-[#DC0032]">
-                <Zap className="w-4 h-4" />
-              </span>
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-                The Skill-to-Career Matrix
-              </h2>
-            </div>
-            <p className="text-xs text-slate-700 mt-0.5 max-w-3xl">
-              Job titles evolve, but <strong className="text-slate-900 font-semibold">transferable skills</strong> empower you for life. Select skills below to filter career pathways.
-            </p>
-          </div>
-
-          {/* Quick Clear Button */}
-          {(activeSkills.length > 0 || selectedPillar !== 'all' || searchQuery) && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold transition-colors self-start md:self-auto active:scale-95"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Filters</span>
-            </button>
-          )}
+    <div className="space-y-10">
+      {/* ---- Intro ---- */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+        <div className="max-w-2xl">
+          <p className="eyebrow">Skill-to-Career Matrix</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-ink mt-3 leading-[1.1]">
+            Pick your skills. Watch careers appear.
+          </h2>
+          <p className="text-base text-muted mt-3 leading-relaxed">
+            Job titles evolve, but <span className="font-semibold text-ink">transferable skills</span> stay
+            with you for life. Tap the ones you have to see where they can take you.
+          </p>
         </div>
 
-        {/* Search & Pillar Filters */}
-        <div className="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-col md:flex-row items-center gap-2.5">
-          <div className="relative w-full md:w-72 shrink-0">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search pathways, skills, or roles..."
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 focus:border-[#DC0032] text-xs font-medium outline-hidden"
-            />
-          </div>
-
-          {/* Pillar Horizontal Pills */}
-          <div className="flex items-center gap-1 overflow-x-auto w-full pb-0.5 scrollbar-none">
-            {pillarsList.map((p) => (
-              <button
-                key={p}
-                onClick={() => { playClickSound(); setSelectedPillar(p); }}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold whitespace-nowrap transition-colors active:scale-95 ${
-                  selectedPillar === p
-                    ? 'bg-[#DC0032] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {p === 'all' ? 'All Disciplines' : p.split(',')[0]}
-              </button>
-            ))}
-          </div>
-        </div>
+        {hasFilters && (
+          <button onClick={clearFilters} className="btn btn-quiet px-4 py-2.5 text-sm self-start shrink-0">
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset</span>
+          </button>
+        )}
       </div>
 
-      {/* Interactive Skill Selector Grid */}
-      <div className="bg-slate-900 text-white rounded-2xl p-3.5 sm:p-4 shadow-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
-            <h3 className="text-xs sm:text-sm font-bold text-white">
-              Tap Skills to Filter ({activeSkills.length} selected):
-            </h3>
-          </div>
+      {/* ---- Skill selector ---- */}
+      <div>
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <p className="meta">
+            Tap skills to filter
+            {activeSkills.length > 0 && (
+              <span className="text-brand font-semibold"> · {activeSkills.length} selected</span>
+            )}
+          </p>
           {activeSkills.length > 0 && (
             <button
               onClick={() => setActiveSkills([])}
-              className="text-[11px] text-amber-300 underline font-semibold hover:text-amber-200 self-start"
+              className="text-xs font-semibold text-brand hover:underline shrink-0"
             >
-              Clear Skills
+              Clear skills
             </button>
           )}
         </div>
@@ -164,117 +116,120 @@ export const SkillCareerMatrixView: React.FC<SkillCareerMatrixViewProps> = ({
               <button
                 key={skill.id}
                 onClick={() => toggleSkill(skill.id)}
-                className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 border select-none active:scale-95 ${
-                  isSelected
-                    ? 'bg-[#DC0032] text-white border-red-500 shadow-sm scale-102'
-                    : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
-                }`}
+                className={`chip flex items-center gap-2 ${isSelected ? 'chip-brand-on' : ''}`}
               >
-                <span 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: skill.color }}
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: isSelected ? '#FFFFFF' : skill.color }}
                 />
                 <span>{skill.name}</span>
-                {isSelected && <Check className="w-3 h-3" />}
+                {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Career Matrix Grid Output */}
+      {/* ---- Search + discipline ---- */}
+      <div className="border-t border-line pt-6 space-y-4">
+        <div className="relative w-full md:max-w-sm">
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-faint pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search pathways, skills, or roles…"
+            className="field pl-11 text-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
+          {pillarsList.map((p) => (
+            <button
+              key={p}
+              onClick={() => { playClickSound(); setSelectedPillar(p); }}
+              className={`chip shrink-0 ${selectedPillar === p ? 'chip-on' : ''}`}
+            >
+              {p === 'all' ? 'All Disciplines' : p.split(',')[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ---- Results ---- */}
       <div>
-        <div className="flex items-center justify-between mb-2.5">
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Briefcase className="w-3.5 h-3.5 text-[#DC0032]" />
-            <span>Matching Pathways ({filteredCareers.length})</span>
+        <div className="flex items-baseline justify-between gap-4 mb-5">
+          <h3 className="text-xl font-bold text-ink">
+            Matching pathways <span className="text-faint font-medium tabular-nums">{filteredCareers.length}</span>
           </h3>
-          <span className="text-[11px] text-slate-600 font-medium">
-            {activeSkills.length > 0 ? 'Sorted by Skill Synergy' : 'All Inclusive Pathways'}
+          <span className="meta shrink-0">
+            {activeSkills.length > 0 ? 'Sorted by skill synergy' : 'All inclusive pathways'}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3">
-          {filteredCareers.map(({ career, matchRatio, matchingSkillsCount }) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-4">
+          {filteredCareers.map(({ career, matchRatio }) => {
             const isFullMatch = activeSkills.length > 0 && matchRatio === 100;
             const isPartialMatch = activeSkills.length > 0 && matchRatio > 0 && matchRatio < 100;
 
             return (
-              <div
+              <button
                 key={career.id}
-                className={`bg-white rounded-2xl border-2 p-3.5 transition-all flex flex-col justify-between relative overflow-hidden ${
-                  isFullMatch
-                    ? 'border-emerald-500 shadow-sm ring-2 ring-emerald-500/10'
-                    : isPartialMatch
-                    ? 'border-amber-400 shadow-xs'
-                    : 'border-slate-200 hover:border-slate-300'
+                onClick={() => onOpenCareerDetails(career)}
+                className={`panel p-5 text-left flex flex-col hover:shadow-lift hover:-translate-y-0.5 transition-all duration-200 group ${
+                  isFullMatch ? 'ring-2 ring-grass' : ''
                 }`}
               >
-                <div>
-                  <div className="flex items-center justify-between gap-1.5">
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md uppercase bg-rose-50 text-[#DC0032] border border-rose-200 truncate max-w-[130px]">
-                      {career.absaPillar}
+                <div className="flex items-start justify-between gap-3">
+                  <span className="meta">{career.absaPillar}</span>
+                  {activeSkills.length > 0 && (
+                    <span
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                        isFullMatch
+                          ? 'bg-grass-tint text-grass'
+                          : isPartialMatch
+                          ? 'bg-gold-tint text-gold'
+                          : 'bg-sunken text-faint'
+                      }`}
+                    >
+                      {matchRatio}%
                     </span>
-                    {activeSkills.length > 0 && (
-                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${
-                        isFullMatch 
-                          ? 'bg-emerald-100 text-emerald-800' 
-                          : isPartialMatch 
-                          ? 'bg-amber-100 text-amber-800' 
-                          : 'bg-slate-100 text-slate-500'
-                      }`}>
-                        {matchRatio}% Match
+                  )}
+                </div>
+
+                <h4 className="font-semibold text-ink text-lg mt-3 leading-snug group-hover:text-brand transition-colors">
+                  {career.title}
+                </h4>
+
+                <p className="text-sm text-muted mt-2 leading-relaxed line-clamp-2 flex-1">
+                  {career.tagline}
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mt-4">
+                  {career.requiredSkillIds.map((sId) => {
+                    const s = SKILLS_DATA.find((sk) => sk.id === sId);
+                    const isSkillActive = activeSkills.includes(sId);
+                    return (
+                      <span
+                        key={sId}
+                        className={`text-[11px] px-2 py-1 rounded-full font-medium ${
+                          isSkillActive ? 'bg-grass-tint text-grass' : 'bg-sunken text-muted'
+                        }`}
+                      >
+                        {s?.name.split(' ')[0]}{isSkillActive ? ' ✓' : ''}
                       </span>
-                    )}
-                  </div>
-
-                  <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm mt-2 leading-snug">
-                    {career.title}
-                  </h4>
-
-                  <p className="text-[11px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                    {career.tagline}
-                  </p>
-
-                  {/* Required Skills Checklist */}
-                  <div className="mt-2.5 pt-2 border-t border-slate-100">
-                    <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">
-                      Required Skills:
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {career.requiredSkillIds.map((sId) => {
-                        const s = SKILLS_DATA.find((sk) => sk.id === sId);
-                        const isSkillActive = activeSkills.includes(sId);
-                        return (
-                          <span
-                            key={sId}
-                            className={`text-[9px] px-1.5 py-0.5 rounded-md font-medium flex items-center gap-0.5 ${
-                              isSkillActive
-                                ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {s?.name.split(' ')[0]} {isSkillActive ? '✓' : ''}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-500 truncate max-w-[90px]">
-                    ⚡ {career.futureOutlook}
+                <div className="flex items-center justify-between mt-5 pt-4 border-t border-line">
+                  <span className="meta truncate">{career.futureOutlook}</span>
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand group-hover:gap-2 transition-all shrink-0">
+                    Blueprint
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </span>
-                  <button
-                    onClick={() => onOpenCareerDetails(career)}
-                    className="text-xs font-bold text-[#DC0032] hover:underline flex items-center gap-0.5"
-                  >
-                    <span>Blueprint</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

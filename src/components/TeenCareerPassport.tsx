@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  ArrowLeft, 
-  Check, 
-  Printer, 
-  Award, 
-  Compass, 
+import {
+  ArrowRight,
+  Check,
+  Award,
   RotateCcw,
   BookOpen,
-  Target,
-  UserCheck
 } from 'lucide-react';
 import { SKILLS_DATA, INTERESTS_DATA, CAREERS_DATA, WORK_STYLES } from '../data/gameData';
 import { CareerMatch, TeenPassportData } from '../types';
-import { playClickSound, playFanfare, playMatchSuccess } from '../utils/audio';
+import { playClickSound, playFanfare } from '../utils/audio';
 
 const AVATARS = [
   { id: 'av-1', emoji: '🧑🏾‍💻', label: 'Tech' },
@@ -36,6 +30,34 @@ interface TeenCareerPassportProps {
   onOpenCertificate: (passport: TeenPassportData, topCareer: CareerMatch) => void;
 }
 
+/** Section heading used throughout the journey — a step number, not a form label. */
+const StepHeading: React.FC<{
+  step: number;
+  title: string;
+  hint: string;
+  done: boolean;
+  counter?: string;
+}> = ({ step, title, hint, done, counter }) => (
+  <div className="flex items-start gap-4 mb-5">
+    <span
+      className={`w-8 h-8 rounded-full grid place-items-center text-sm font-semibold shrink-0 transition-colors ${
+        done ? 'bg-brand text-white' : 'bg-sunken text-faint'
+      }`}
+    >
+      {done ? <Check className="w-4 h-4" strokeWidth={3} /> : step}
+    </span>
+    <div className="flex-1 min-w-0">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h3 className="text-xl sm:text-2xl font-bold text-ink">{title}</h3>
+        {counter && (
+          <span className={`text-sm font-semibold ${done ? 'text-brand' : 'text-faint'}`}>{counter}</span>
+        )}
+      </div>
+      <p className="text-sm text-muted mt-1">{hint}</p>
+    </div>
+  </div>
+);
+
 export const TeenCareerPassport: React.FC<TeenCareerPassportProps> = ({
   onEarnXp,
   onUnlockBadge,
@@ -47,7 +69,8 @@ export const TeenCareerPassport: React.FC<TeenCareerPassportProps> = ({
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedWorkStyle, setSelectedWorkStyle] = useState<string>('style-builder');
-  
+  const [personaChosen, setPersonaChosen] = useState<boolean>(false);
+
   const [passportGenerated, setPassportGenerated] = useState<boolean>(false);
   const [passportData, setPassportData] = useState<TeenPassportData | null>(null);
 
@@ -149,74 +172,85 @@ export const TeenCareerPassport: React.FC<TeenCareerPassportProps> = ({
   const rankedMatches = calculateRankedCareers();
   const topCareer = rankedMatches[0]?.career;
 
+  const isReady = !!name.trim() && selectedSkills.length > 0;
+  const stepsDone =
+    (name.trim() ? 1 : 0) +
+    (selectedSkills.length > 0 ? 1 : 0) +
+    (selectedInterests.length > 0 ? 1 : 0) +
+    (personaChosen ? 1 : 0);
+  const journeyProgress = (stepsDone / 4) * 100;
+
   return (
-    <div className="space-y-5 max-w-6xl 2xl:max-w-[1600px] mx-auto">
+    <div className="max-w-5xl 3xl:max-w-6xl mx-auto">
       <AnimatePresence mode="wait">
         {!passportGenerated ? (
-          /* STREAMLINED 1-PAGE EXPRESS DISCOVERY FORM */
-          <motion.div 
+          /* ============ THE DISCOVERY JOURNEY ============ */
+          <motion.div
             key="wizard"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white rounded-3xl border border-rose-100 p-4 sm:p-6 shadow-xs space-y-5"
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Header */}
-            <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#DC0032] uppercase tracking-wider bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
-                  <UserCheck className="w-3.5 h-3.5" />
-                  <span>2-Step Express Match</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
-                  Build Your Teen Career Passport
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-600">
-                  Select your superpowers & passions to instantly unlock your career compatibility score.
-                </p>
-              </div>
-
-              <div className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl self-start sm:self-center">
-                Fast Discovery
-              </div>
+            {/* Opening */}
+            <div className="text-center max-w-2xl mx-auto">
+              <p className="eyebrow">Teen Career Passport</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ink mt-3 leading-[1.1]">
+                Let's find the careers
+                <br className="hidden sm:block" /> built for you.
+              </h2>
+              <p className="text-base sm:text-lg text-muted mt-4 leading-relaxed">
+                Pick what feels like you — your strengths, your curiosity, your style.
+                We'll turn them into real pathways in under a minute.
+              </p>
             </div>
 
-            {/* Split Grid for Large Screens: Left side (Identity & Skills), Right side (Passions, Impact & Launch) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              
-              {/* Left Column (6 cols): Identity & Superpowers */}
-              <div className="lg:col-span-6 space-y-4">
-                {/* SECTION A: Teen Name & Avatar */}
-                <div className="bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/80 space-y-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold uppercase text-slate-700 tracking-wider">
-                      Your Name / Nickname *
-                    </label>
-                    <input
-                      id="input-teen-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your name (e.g. Zawadi Kamau)"
-                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm font-medium focus:border-[#DC0032] focus:ring-2 focus:ring-rose-500/20 outline-hidden"
-                    />
-                  </div>
+            {/* Journey progress — light, not a scoreboard */}
+            <div className="max-w-md mx-auto mt-8">
+              <div className="h-1.5 rounded-full bg-line overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-brand"
+                  animate={{ width: `${journeyProgress}%` }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </div>
+              <p className="text-center meta mt-2.5">
+                {isReady ? 'Ready when you are ✨' : `${stepsDone} of 4 steps`}
+              </p>
+            </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold uppercase text-slate-700 tracking-wider">
-                      Avatar Persona
-                    </label>
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <div className="mt-14 space-y-16">
+              {/* ---- STEP 1: Who's playing ---- */}
+              <section>
+                <StepHeading
+                  step={1}
+                  title="First — who are you?"
+                  hint="Your name goes on the passport and certificate."
+                  done={!!name.trim()}
+                />
+
+                <div className="sm:pl-12 space-y-6">
+                  <input
+                    id="input-teen-name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name (e.g. Zawadi Kamau)"
+                    className="field max-w-md text-lg font-medium"
+                  />
+
+                  <div>
+                    <p className="meta mb-3">Choose an avatar</p>
+                    <div className="flex flex-wrap items-center gap-2">
                       {AVATARS.map((av) => (
                         <button
                           key={av.id}
                           type="button"
                           onClick={() => { playClickSound(); setAvatar(av.emoji); }}
-                          className={`p-2 rounded-xl text-lg sm:text-xl transition-all shrink-0 active:scale-90 ${
+                          className={`w-14 h-14 rounded-2xl text-2xl grid place-items-center transition-all duration-150 active:scale-90 ${
                             avatar === av.emoji
-                              ? 'bg-[#DC0032] text-white shadow-xs scale-105'
-                              : 'bg-white border border-slate-200 hover:border-slate-300'
+                              ? 'bg-brand-tint ring-2 ring-brand scale-105'
+                              : 'bg-sunken hover:bg-line'
                           }`}
                           title={av.label}
                         >
@@ -226,361 +260,337 @@ export const TeenCareerPassport: React.FC<TeenCareerPassportProps> = ({
                     </div>
                   </div>
                 </div>
+              </section>
 
-                {/* SECTION B: Top 3 Superpowers */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                      <span>1. Pick Top 3 Superpowers</span>
-                      <span className="text-xs font-bold text-[#DC0032]">({selectedSkills.length}/3)</span>
-                    </label>
-                    <span className="text-[11px] text-slate-500 font-medium">Tap to select</span>
-                  </div>
+              {/* ---- STEP 2: Superpowers ---- */}
+              <section>
+                <StepHeading
+                  step={2}
+                  title="Pick your top 3 superpowers"
+                  hint="The things you're naturally good at, or want to get good at."
+                  done={selectedSkills.length > 0}
+                  counter={`${selectedSkills.length}/3`}
+                />
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                    {SKILLS_DATA.map((skill) => {
-                      const isSelected = selectedSkills.includes(skill.id);
-                      return (
-                        <button
-                          key={skill.id}
-                          type="button"
-                          onClick={() => toggleSkill(skill.id)}
-                          className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between select-none relative active:scale-95 ${
-                            isSelected
-                              ? 'border-[#DC0032] bg-rose-50/70 shadow-xs'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span 
-                              className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: skill.color }}
-                            />
-                            {isSelected && (
-                              <span className="text-[10px] font-bold text-[#DC0032]">✓</span>
-                            )}
-                          </div>
-                          <div className="mt-1">
-                            <h4 className="font-bold text-slate-900 text-xs leading-tight">
-                              {skill.name}
-                            </h4>
-                            <p className="text-[9px] text-slate-500 mt-0.5 line-clamp-1">
-                              {skill.tagline}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="sm:pl-12 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {SKILLS_DATA.map((skill) => {
+                    const isSelected = selectedSkills.includes(skill.id);
+                    const isMaxed = !isSelected && selectedSkills.length >= 3;
+                    return (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        onClick={() => toggleSkill(skill.id)}
+                        className={`pick p-4 ${isSelected ? 'pick-on' : ''} ${
+                          isMaxed ? 'opacity-45' : ''
+                        }`}
+                      >
+                        <span className="flex items-start justify-between gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0"
+                            style={{ backgroundColor: skill.color }}
+                          />
+                          {isSelected && (
+                            <span className="w-5 h-5 rounded-full bg-brand text-white grid place-items-center shrink-0">
+                              <Check className="w-3 h-3" strokeWidth={3} />
+                            </span>
+                          )}
+                        </span>
+                        <span className="block font-semibold text-ink text-sm mt-3 leading-snug">
+                          {skill.name}
+                        </span>
+                        <span className="block text-xs text-muted mt-1 leading-relaxed line-clamp-2">
+                          {skill.tagline}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
+              </section>
 
-              {/* Right Column (6 cols): Passions, Impact & Launch */}
-              <div className="lg:col-span-6 space-y-4 flex flex-col justify-between">
-                <div className="space-y-4">
-                  {/* SECTION C: Curiosity Domains */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                        <span>2. Pick 1-2 Curiosity Passions</span>
-                        <span className="text-xs font-bold text-amber-700">({selectedInterests.length}/2)</span>
-                      </label>
-                    </div>
+              {/* ---- STEP 3: Curiosity Passions ---- */}
+              <section>
+                <StepHeading
+                  step={3}
+                  title="What are you curious about?"
+                  hint="Choose 1 or 2 worlds you'd happily fall down a rabbit hole in."
+                  done={selectedInterests.length > 0}
+                  counter={`${selectedInterests.length}/2`}
+                />
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2">
-                      {INTERESTS_DATA.map((interest) => {
-                        const isSelected = selectedInterests.includes(interest.id);
-                        return (
-                          <button
-                            key={interest.id}
-                            type="button"
-                            onClick={() => toggleInterest(interest.id)}
-                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2 active:scale-95 ${
-                              isSelected
-                                ? 'border-amber-500 bg-amber-50 shadow-xs'
-                                : 'border-slate-200 hover:border-slate-300 bg-white'
-                            }`}
-                          >
-                            <span className="text-xl">{interest.emoji}</span>
-                            <div className="truncate">
-                              <h4 className="font-bold text-slate-900 text-xs truncate">
-                                {interest.name.split('&')[0]}
-                              </h4>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* SECTION D: Impact Style */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase text-slate-700 tracking-wider block">
-                      3. Your Impact Persona
-                    </label>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-2">
-                      {WORK_STYLES.map((style) => {
-                        const isSelected = selectedWorkStyle === style.id;
-                        return (
-                          <button
-                            key={style.id}
-                            type="button"
-                            onClick={() => { playClickSound(); setSelectedWorkStyle(style.id); }}
-                            className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2 active:scale-95 ${
-                              isSelected
-                                ? 'border-[#DC0032] bg-rose-50/60 shadow-xs'
-                                : 'border-slate-200 hover:border-slate-300 bg-white'
-                            }`}
-                          >
-                            <span className="text-xl">{style.emoji}</span>
-                            <div>
-                              <h4 className="font-bold text-slate-900 text-xs leading-tight">
-                                {style.title.replace('The ', '')}
-                              </h4>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                <div className="sm:pl-12 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {INTERESTS_DATA.map((interest) => {
+                    const isSelected = selectedInterests.includes(interest.id);
+                    const isMaxed = !isSelected && selectedInterests.length >= 2;
+                    return (
+                      <button
+                        key={interest.id}
+                        type="button"
+                        onClick={() => toggleInterest(interest.id)}
+                        className={`pick p-4 flex items-center gap-3 ${isSelected ? 'pick-on' : ''} ${
+                          isMaxed ? 'opacity-45' : ''
+                        }`}
+                      >
+                        <span className="text-2xl shrink-0">{interest.emoji}</span>
+                        <span className="font-semibold text-ink text-sm leading-snug min-w-0 truncate">
+                          {interest.name.split('&')[0]}
+                        </span>
+                        {isSelected && (
+                          <span className="w-5 h-5 rounded-full bg-brand text-white grid place-items-center shrink-0 ml-auto">
+                            <Check className="w-3 h-3" strokeWidth={3} />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+              </section>
 
-                {/* Submit Launch Bar */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 bg-rose-50/40 p-3 rounded-2xl border border-rose-100">
-                  <div className="text-xs text-slate-600 font-medium">
-                    {name.trim() && selectedSkills.length > 0 ? (
-                      <span className="text-emerald-700 font-bold">✓ Ready to generate passport</span>
-                    ) : (
-                      <span>Enter name & pick 1-3 superpowers</span>
-                    )}
-                  </div>
+              {/* ---- STEP 4: Impact Persona ---- */}
+              <section>
+                <StepHeading
+                  step={4}
+                  title="How do you want to make impact?"
+                  hint="There's no wrong answer — pick the one that sounds most like you."
+                  done={personaChosen}
+                />
 
-                  <button
-                    id="btn-generate-passport"
-                    disabled={!name.trim() || selectedSkills.length === 0}
-                    onClick={handleGeneratePassport}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-all shrink-0 ${
-                      name.trim() && selectedSkills.length > 0
-                        ? 'bg-[#DC0032] text-white hover:bg-[#B40026] shadow-red-500/20 active:scale-95'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>Generate Passport</span>
-                  </button>
+                <div className="sm:pl-12 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {WORK_STYLES.map((style) => {
+                    const isSelected = selectedWorkStyle === style.id;
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => { playClickSound(); setSelectedWorkStyle(style.id); setPersonaChosen(true); }}
+                        className={`pick p-4 flex items-start gap-3.5 ${isSelected ? 'pick-on' : ''}`}
+                      >
+                        <span className="text-2xl shrink-0">{style.emoji}</span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink text-sm leading-snug">
+                            {style.title.replace('The ', '')}
+                          </span>
+                          <span className="block text-xs text-muted mt-1 leading-relaxed">
+                            {style.tagline}
+                          </span>
+                        </span>
+                        {isSelected && (
+                          <span className="w-5 h-5 rounded-full bg-brand text-white grid place-items-center shrink-0 ml-auto">
+                            <Check className="w-3 h-3" strokeWidth={3} />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+              </section>
+            </div>
+
+            {/* ---- The moment: primary CTA ---- */}
+            <div className="sticky bottom-6 mt-14 flex justify-center px-2">
+              <div className="panel w-full sm:w-auto px-4 sm:px-5 py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 shadow-lift">
+                <p className="text-sm text-muted text-center sm:text-left">
+                  {isReady ? (
+                    <span className="font-medium text-ink">
+                      {selectedSkills.length} superpower{selectedSkills.length === 1 ? '' : 's'}
+                      {selectedInterests.length > 0 && ` · ${selectedInterests.length} passion${selectedInterests.length === 1 ? '' : 's'}`} locked in
+                    </span>
+                  ) : (
+                    'Add your name and at least one superpower'
+                  )}
+                </p>
+                <button
+                  id="btn-generate-passport"
+                  disabled={!isReady}
+                  onClick={handleGeneratePassport}
+                  className="btn btn-primary w-full sm:w-auto px-7 py-3.5 text-base"
+                >
+                  ✨ Reveal My Career Matches
+                </button>
               </div>
             </div>
           </motion.div>
         ) : (
-          /* PASSPORT RESULTS VIEW */
+          /* ============ THE REVEAL ============ */
           passportData && (
-            <motion.div 
+            <motion.div
               key="results"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-12"
             >
-              {/* Identity Header Card */}
-              <div className="bg-gradient-to-br from-[#4A0017] via-[#2E000C] to-slate-950 text-white rounded-3xl p-5 sm:p-6 shadow-lg relative overflow-hidden border border-rose-900/40">
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl shadow-inner shrink-0">
+              {/* Passport identity */}
+              <section className="panel p-6 sm:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <span className="w-16 h-16 rounded-3xl bg-brand-tint grid place-items-center text-4xl shrink-0">
                       {passportData.teenAvatar}
-                    </div>
+                    </span>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#DC0032] text-white px-2 py-0.5 rounded-md">
-                          OFFICIAL PASSPORT
-                        </span>
-                        <span className="text-xs text-rose-200 font-mono">
-                          {passportData.passportId}
-                        </span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-black text-white mt-0.5">
+                      <p className="eyebrow">Official Passport · {passportData.passportId}</p>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-ink mt-1.5">
                         {passportData.teenName}
                       </h2>
-                      <p className="text-xs text-rose-200/80">
-                        {passportData.generatedDate} • Absa Future Ready 2026
+                      <p className="meta mt-1">
+                        {passportData.generatedDate} · Absa Future Ready 2026
                       </p>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       id="btn-print-certificate"
                       onClick={() => topCareer && onOpenCertificate(passportData, topCareer)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95"
+                      className="btn btn-primary px-5 py-3 text-sm"
                     >
-                      <Award className="w-4 h-4 text-slate-950" />
+                      <Award className="w-4 h-4" />
                       <span>Print Certificate</span>
                     </button>
 
                     <button
                       id="btn-reconfigure-passport"
                       onClick={resetWizard}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 font-bold text-xs transition-colors active:scale-95"
+                      className="btn btn-quiet px-4 py-3 text-sm"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-4 h-4" />
                       <span>Edit</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Badges Summary Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4 pt-4 border-t border-white/10 text-xs">
+                {/* Summary — plain data, no boxes */}
+                <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 mt-8 pt-7 border-t border-line">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-rose-200/80 block">Superpowers</span>
-                    <span className="font-bold text-white">
+                    <dt className="eyebrow">Superpowers</dt>
+                    <dd className="text-sm font-semibold text-ink mt-1.5">
                       {selectedSkills.map((s) => SKILLS_DATA.find((sk) => sk.id === s)?.name.split(' ')[0]).join(', ')}
-                    </span>
+                    </dd>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-rose-200/80 block">Passions</span>
-                    <span className="font-bold text-amber-200">
-                      {selectedInterests.map((i) => INTERESTS_DATA.find((int) => int.id === i)?.name.split('&')[0]).join(', ') || 'General'}
-                    </span>
+                    <dt className="eyebrow">Passions</dt>
+                    <dd className="text-sm font-semibold text-ink mt-1.5">
+                      {selectedInterests.map((i) => INTERESTS_DATA.find((int) => int.id === i)?.name.split('&')[0].trim()).join(', ') || 'General'}
+                    </dd>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-rose-200/80 block">Impact Persona</span>
-                    <span className="font-bold text-white">
+                    <dt className="eyebrow">Impact Persona</dt>
+                    <dd className="text-sm font-semibold text-ink mt-1.5">
                       {WORK_STYLES.find((w) => w.id === selectedWorkStyle)?.title.replace('The ', '')}
-                    </span>
+                    </dd>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-rose-200/80 block">Readiness</span>
-                    <span className="font-bold text-emerald-400">High Potential ✓</span>
+                    <dt className="eyebrow">Readiness</dt>
+                    <dd className="text-sm font-semibold text-grass mt-1.5">High Potential ✓</dd>
                   </div>
+                </dl>
+              </section>
+
+              {/* Top matches */}
+              <section>
+                <div className="flex items-baseline justify-between gap-4 mb-5">
+                  <h3 className="text-2xl font-bold text-ink">Your top career synergies</h3>
+                  <span className="meta shrink-0">AI compatibility</span>
                 </div>
-              </div>
 
-              {/* TOP MATCHES & ACTION ROADMAP SIDE-BY-SIDE ON LARGE DISPLAYS */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                
-                {/* Top Matches (7 cols) */}
-                <div className="lg:col-span-7 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                      <Target className="w-4 h-4 text-[#DC0032]" />
-                      <span>Top Future Career Synergies</span>
-                    </h3>
-                    <span className="text-xs font-bold text-slate-500">
-                      AI Compatibility
-                    </span>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {rankedMatches.slice(0, 3).map((item, index) => {
+                    const career = item.career;
+                    const isTopRank = index === 0;
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {rankedMatches.slice(0, 3).map((item, index) => {
-                      const career = item.career;
-                      const isTopRank = index === 0;
-
-                      return (
-                        <div
-                          key={career.id}
-                          className={`rounded-2xl border-2 p-3.5 bg-white transition-all flex flex-col justify-between relative ${
-                            isTopRank
-                              ? 'border-[#DC0032] shadow-xs'
-                              : 'border-slate-200 hover:border-slate-300'
-                          }`}
-                        >
+                    return (
+                      <motion.div
+                        key={career.id}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 + index * 0.08, duration: 0.3 }}
+                        className={`panel p-5 flex flex-col ${isTopRank ? 'ring-2 ring-brand' : ''}`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-lg font-bold ${isTopRank ? 'text-brand' : 'text-ink'}`}>
+                            {item.compatibility}%
+                          </span>
                           {isTopRank && (
-                            <span className="absolute top-0 right-0 bg-[#DC0032] text-white text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-bl-lg">
-                              ★ Top Synergy
+                            <span className="text-[11px] font-semibold text-brand bg-brand-tint px-2.5 py-1 rounded-full">
+                              Top match
                             </span>
                           )}
-
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-[#DC0032]">
-                                {item.compatibility}% Match
-                              </span>
-                              <span className="text-[9px] font-medium bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md truncate max-w-[90px]">
-                                {career.absaPillar}
-                              </span>
-                            </div>
-
-                            <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm mt-1.5 leading-snug">
-                              {career.title}
-                            </h4>
-
-                            <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                              {career.tagline}
-                            </p>
-
-                            {/* Skill Tags */}
-                            <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap gap-1">
-                              {career.requiredSkillIds.map((sId) => {
-                                const s = SKILLS_DATA.find((sk) => sk.id === sId);
-                                const isMatched = selectedSkills.includes(sId);
-                                return (
-                                  <span
-                                    key={sId}
-                                    className={`text-[9px] px-1.5 py-0.5 rounded-md font-medium ${
-                                      isMatched
-                                        ? 'bg-emerald-100 text-emerald-800 font-bold'
-                                        : 'bg-slate-100 text-slate-600'
-                                    }`}
-                                  >
-                                    {s?.name.split(' ')[0]} {isMatched ? '✓' : ''}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {career.salaryTier.split(' ')[0]}
-                            </span>
-                            <button
-                              onClick={() => onOpenCareerDetails(career)}
-                              className="text-xs font-bold text-[#DC0032] hover:underline flex items-center gap-1"
-                            >
-                              <span>Explore</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </button>
-                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        <h4 className="font-semibold text-ink text-base mt-3 leading-snug">
+                          {career.title}
+                        </h4>
+                        <p className="meta mt-1">{career.absaPillar}</p>
+
+                        <p className="text-sm text-muted mt-3 leading-relaxed line-clamp-3 flex-1">
+                          {career.tagline}
+                        </p>
+
+                        <div className="flex flex-wrap gap-1.5 mt-4">
+                          {career.requiredSkillIds.map((sId) => {
+                            const s = SKILLS_DATA.find((sk) => sk.id === sId);
+                            const isMatched = selectedSkills.includes(sId);
+                            return (
+                              <span
+                                key={sId}
+                                className={`text-[11px] px-2 py-1 rounded-full font-medium ${
+                                  isMatched ? 'bg-grass-tint text-grass' : 'bg-sunken text-muted'
+                                }`}
+                              >
+                                {s?.name.split(' ')[0]}{isMatched ? ' ✓' : ''}
+                              </span>
+                            );
+                          })}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-5 pt-4 border-t border-line">
+                          <span className="meta">{career.salaryTier.split(' ')[0]}</span>
+                          <button
+                            onClick={() => onOpenCareerDetails(career)}
+                            className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:gap-2 transition-all"
+                          >
+                            <span>Explore</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
+              </section>
 
-                {/* High School Roadmap for Top Match (5 cols) */}
-                {topCareer && (
-                  <div className="lg:col-span-5 bg-rose-50/70 border border-rose-200 rounded-3xl p-4 sm:p-5 space-y-3 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <BookOpen className="w-4 h-4 text-[#DC0032]" />
-                        <h3 className="text-xs sm:text-sm font-bold text-slate-900">
-                          High School Starter Kit: <span className="text-[#DC0032]">{topCareer.title}</span>
-                        </h3>
-                      </div>
-
-                      <div className="space-y-2">
-                        {topCareer.teenActionSteps.map((stepItem, idx) => (
-                          <div key={idx} className="bg-white rounded-xl p-2.5 border border-rose-100 text-xs flex items-start gap-2.5">
-                            <span className="w-5 h-5 rounded-full bg-[#DC0032] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                              {idx + 1}
-                            </span>
-                            <p className="font-medium text-slate-700 leading-normal">
-                              {stepItem}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="pt-2 text-[11px] text-slate-500 text-center font-medium">
-                      Absa Future Ready Teens • Skill-First Career Blueprint
-                    </div>
+              {/* Starter kit */}
+              {topCareer && (
+                <section className="panel p-6 sm:p-8">
+                  <div className="flex items-center gap-2.5">
+                    <BookOpen className="w-5 h-5 text-brand shrink-0" />
+                    <h3 className="text-xl font-bold text-ink">
+                      High school starter kit
+                    </h3>
                   </div>
-                )}
-              </div>
+                  <p className="text-sm text-muted mt-1.5">
+                    What to do today to head towards <span className="font-semibold text-ink">{topCareer.title}</span>.
+                  </p>
+
+                  <ol className="mt-6 space-y-4 max-w-3xl">
+                    {topCareer.teenActionSteps.map((stepItem, idx) => (
+                      <li key={idx} className="flex items-start gap-4">
+                        <span className="w-7 h-7 rounded-full bg-brand-tint text-brand text-xs font-semibold grid place-items-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <p className="text-sm sm:text-base text-ink leading-relaxed pt-0.5">
+                          {stepItem}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <p className="meta mt-8 pt-6 border-t border-line">
+                    Absa Future Ready Teens · Skill-First Career Blueprint
+                  </p>
+                </section>
+              )}
             </motion.div>
           )
         )}

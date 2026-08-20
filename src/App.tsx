@@ -10,7 +10,7 @@ import { CareerModal } from './components/CareerModal';
 import { CertificateModal } from './components/CertificateModal';
 import { CareerMatch, TeenPassportData } from './types';
 import { playLevelUpSound, playClickSound } from './utils/audio';
-import { Sparkles, Heart } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<'support' | 'passport' | 'quests' | 'matrix' | 'badges'>('support');
@@ -82,7 +82,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F7] text-slate-900 font-sans">
+    <div className="min-h-screen flex flex-col bg-canvas text-ink font-sans">
       {/* Navigation Header */}
       <Header
         currentTab={currentTab}
@@ -99,15 +99,13 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-rose-500/30 flex items-center gap-2.5"
+            className="fixed bottom-6 right-6 z-50 bg-ink text-white pl-4 pr-5 py-3 rounded-2xl shadow-lift flex items-center gap-3"
           >
-            <div className="p-1 rounded-lg bg-[#DC0032] text-white">
-              <Sparkles className="w-3.5 h-3.5" />
-            </div>
+            <Sparkles className="w-4 h-4 text-gold shrink-0" />
             <div>
-              <p className="text-xs font-bold">{toastMessage.text}</p>
+              <p className="text-sm font-semibold leading-tight">{toastMessage.text}</p>
               {toastMessage.xp && (
-                <span className="text-[10px] text-amber-300 font-extrabold">
+                <span className="text-xs text-white/60 font-medium">
                   +{toastMessage.xp} XP
                 </span>
               )}
@@ -117,15 +115,15 @@ export default function App() {
       </AnimatePresence>
 
       {/* Main Dynamic View Area with subtle Motion transitions */}
-      <main className="flex-1 max-w-7xl 2xl:max-w-[1720px] 3xl:max-w-[1920px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-5">
+      <main className="flex-1 max-w-7xl 3xl:max-w-[1720px] w-full mx-auto px-5 sm:px-8 py-8 sm:py-12">
         <AnimatePresence mode="wait">
           {currentTab === 'support' && (
             <motion.div
               key="support"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <TeenCareerSupport
                 onOpenCareerDetails={(career) => setSelectedCareerForModal(career)}
@@ -138,10 +136,10 @@ export default function App() {
           {currentTab === 'passport' && (
             <motion.div
               key="passport"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <TeenCareerPassport
                 onEarnXp={handleEarnXp}
@@ -157,10 +155,10 @@ export default function App() {
           {currentTab === 'quests' && (
             <motion.div
               key="quests"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <ScenarioQuestsView
                 onEarnXp={handleEarnXp}
@@ -172,10 +170,10 @@ export default function App() {
           {currentTab === 'matrix' && (
             <motion.div
               key="matrix"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <SkillCareerMatrixView
                 onOpenCareerDetails={(career) => setSelectedCareerForModal(career)}
@@ -186,10 +184,10 @@ export default function App() {
           {currentTab === 'badges' && (
             <motion.div
               key="badges"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               <AchievementsView
                 unlockedBadgeIds={unlockedBadgeIds}
@@ -215,27 +213,28 @@ export default function App() {
       />
 
       {/* Event Footer */}
-      <footer className="bg-white border-t border-rose-100 py-6 px-4 sm:px-6 lg:px-8 mt-10 text-slate-600 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-[#DC0032] text-white flex items-center justify-center font-bold text-xs">
+      <footer className="mt-16 border-t border-line">
+        <div className="max-w-7xl 3xl:max-w-[1720px] mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted">
+          <div className="flex items-center gap-3">
+            <span className="w-7 h-7 rounded-xl bg-brand text-white grid place-items-center font-bold text-[11px] shrink-0">
               ab
-            </div>
+            </span>
             <div>
-              <span className="font-bold text-slate-900">Absa Future Ready Teens</span>
-              <p className="text-[11px] text-slate-500">
+              <p className="font-semibold text-ink">Absa Future Ready Teens</p>
+              <p className="text-faint mt-0.5">
                 Skills-first empowerment for high school students across Africa.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs font-semibold">
-            <span className="text-slate-500">Absa ReadytoWork</span>
-            <span className="text-slate-300">•</span>
-            <span className="text-[#DC0032] font-bold">#AbsaFutureReady2026</span>
+          <div className="flex items-center gap-3">
+            <span>Absa ReadytoWork</span>
+            <span className="w-1 h-1 rounded-full bg-line" />
+            <span className="font-semibold text-brand">#AbsaFutureReady2026</span>
           </div>
         </div>
       </footer>
+
     </div>
   );
 }

@@ -1,1 +1,190 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Career Match-Up — Design Tokens
+   Manrope · 700 headings · 600 buttons & card titles · 400 body
+   ============================================================ */
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Neutral canvas — warm, quiet, Notion-like */
+  --color-canvas: #FBFAF9;
+  --color-surface: #FFFFFF;
+  --color-sunken: #F5F4F2;
+
+  /* Ink scale */
+  --color-ink: #1A1A1F;
+  --color-muted: #6C6C78;
+  --color-faint: #9C9CA8;
+  --color-line: #ECEBE8;
+
+  /* Absa red — reserved for active states and CTAs */
+  --color-brand: #DC0032;
+  --color-brand-deep: #B00027;
+  --color-brand-tint: #FFF0F3;
+  --color-brand-line: #FFD4DD;
+
+  /* Supporting accents, used sparingly */
+  --color-gold: #F0A500;
+  --color-gold-tint: #FFF8E8;
+  --color-grass: #10A45B;
+  --color-grass-tint: #ECFAF2;
+
+  --shadow-soft: 0 1px 2px rgba(20, 20, 30, 0.04), 0 6px 18px -10px rgba(20, 20, 30, 0.12);
+  --shadow-lift: 0 2px 4px rgba(20, 20, 30, 0.05), 0 16px 32px -16px rgba(20, 20, 30, 0.22);
+  --shadow-pick: 0 0 0 2px var(--color-brand) inset;
+
+  --breakpoint-3xl: 1920px;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-weight: 400;
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  button {
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #DDDCD8;
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* ---- Surfaces -------------------------------------------------- */
+  /* One flat white plane. No nested boxes, no decorative borders. */
+  .panel {
+    @apply bg-surface rounded-3xl;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* ---- Selectable cards (Superpowers, Passions, Impact Persona) --- */
+  .pick {
+    @apply relative bg-surface rounded-2xl text-left transition-all duration-150 select-none
+           border border-line hover:border-faint/60 active:scale-[0.97];
+  }
+  .pick-on {
+    @apply border-transparent bg-brand-tint;
+    box-shadow: var(--shadow-pick);
+  }
+
+  /* ---- Buttons ---------------------------------------------------- */
+  /* Compose in markup: class="btn btn-primary" */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-full
+           transition-all duration-150 active:scale-[0.97] whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply bg-brand text-white hover:bg-brand-deep;
+    box-shadow: 0 1px 2px rgba(176, 0, 39, 0.24), 0 8px 20px -8px rgba(220, 0, 50, 0.5);
+  }
+  .btn-primary:disabled {
+    @apply bg-sunken text-faint cursor-not-allowed active:scale-100;
+    box-shadow: none;
+  }
+  .btn-dark {
+    @apply bg-ink text-white hover:bg-ink/90;
+  }
+  .btn-quiet {
+    @apply text-muted hover:text-ink hover:bg-sunken;
+  }
+  .btn-outline {
+    @apply bg-surface text-ink border border-line hover:border-faint/60;
+  }
+
+  /* ---- Segmented control (tabs & filters) ------------------------- */
+  .seg {
+    @apply inline-flex items-center gap-1 p-1 rounded-full bg-sunken;
+  }
+  .seg-item {
+    @apply px-4 py-2 rounded-full text-sm font-semibold text-muted transition-all duration-150
+           hover:text-ink whitespace-nowrap;
+  }
+  .seg-item-on {
+    @apply bg-surface text-ink;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* ---- Quiet filter chip ------------------------------------------ */
+  .chip {
+    @apply px-3.5 py-2 rounded-full text-sm font-medium text-muted bg-transparent
+           transition-all duration-150 hover:bg-sunken hover:text-ink whitespace-nowrap
+           active:scale-[0.97];
+  }
+  .chip-on {
+    @apply bg-ink text-white hover:bg-ink hover:text-white;
+  }
+  .chip-brand-on {
+    @apply bg-brand text-white hover:bg-brand hover:text-white;
+  }
+
+  /* ---- Form field -------------------------------------------------- */
+  .field {
+    @apply w-full rounded-2xl bg-sunken border border-transparent px-4 py-3 text-base
+           text-ink placeholder:text-faint outline-hidden transition-all duration-150
+           focus:bg-surface focus:border-brand focus:ring-4 focus:ring-brand/10;
+  }
+
+  /* ---- Text roles --------------------------------------------------- */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-faint;
+  }
+  .meta {
+    @apply text-xs font-medium text-muted;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Keep only the certificate on the page when printing. */
+@media print {
+  body {
+    background: #fff;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printable-certificate,
+  #printable-certificate * {
+    visibility: visible;
+  }
+  #printable-certificate {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+  }
+}
