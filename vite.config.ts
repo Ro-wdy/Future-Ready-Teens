@@ -12,6 +12,11 @@ export default defineConfig(() => {
       },
     },
     server: {
+      // Dev runs Vite on 5173 and the lead API on 3000; production serves both
+      // from the Express process on one port, so the app only ever calls /api.
+      proxy: {
+        '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

@@ -1,6 +1,6 @@
 {
   "name": "Career Match-Up - Absa Future Ready Teens",
-  "description": "An interactive gamified career discovery game for the Absa Future Ready Teens Event. Match strengths and interests to emerging careers, explore skill combinations, and build your future-ready teen passport.",
+  "description": "A seven-round interactive screen game for the Absa Future Ready Teens Event. Teens answer situations rather than questions, and their answers plus an interest mash-up reveal their future type and the careers it opens up.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -168,3 +168,85 @@ export function playFanfare() {
     });
   });
 }
+
+/**
+ * A short, fat "committed" pop for tapping an answer. The click sound is too
+ * thin to carry across a noisy event floor — this one has a body to it.
+ */
+export function playPop() {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  [
+    { type: 'sine' as OscillatorType, from: 300, to: 720, gain: 0.2 },
+    { type: 'triangle' as OscillatorType, from: 600, to: 1440, gain: 0.09 },
+  ].forEach(({ type, from, to, gain: g }) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, now);
+    osc.frequency.exponentialRampToValueAtTime(to, now + 0.09);
+    gain.gain.setValueAtTime(g, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  });
+}
+
+/** Air moving as one round slides off and the next slides on. */
+export function playWhoosh() {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const length = Math.floor(ctx.sampleRate * 0.22);
+  const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < length; i++) {
+    // Noise with a fade so it reads as a sweep rather than a burst of static.
+    data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+  }
+
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(500, now);
+  filter.frequency.exponentialRampToValueAtTime(2600, now + 0.2);
+  filter.Q.value = 1.1;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.09, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  src.start(now);
+  src.stop(now + 0.23);
+}
+
+/** Rising ticks under the "working it out" screen. */
+export function playCrunchTick(step: number) {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(360 + step * 110, now);
+  gain.gain.setValueAtTime(0.05, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.08);
+}

@@ -227,3 +227,220 @@
     margin-top: 0.25rem;
   }
 }
+
+/* ============================================================
+   GAME LAYER
+   Everything below exists to stop this reading as a form.
+   A round is: a full-bleed colour, one big situation, and
+   answers you tap once. No Continue button, no "Question 3 of 7".
+   ============================================================ */
+
+@layer components {
+  /* Each ask sets --theme / --tint; the whole stage takes its colour from it. */
+  /* The stage itself never scrolls — the HUD has to stay pinned. Only the
+     round's content area scrolls, and only when a round is too tall. */
+  .stage {
+    background: var(--tint, #F9F8F8);
+    transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    @apply relative flex-1 min-h-0 overflow-hidden flex flex-col;
+  }
+  .stage-scroll {
+    @apply relative flex-1 min-h-0 overflow-y-auto flex flex-col;
+  }
+
+  /* Two slow-drifting blobs. Purely atmosphere — they keep a static
+     question screen from feeling like a printed page. */
+  .blob {
+    @apply pointer-events-none absolute rounded-full;
+    filter: blur(70px);
+    opacity: 0.28;
+    background: var(--theme, #AF144B);
+    will-change: transform;
+  }
+  .blob-a {
+    width: 46vmin; height: 46vmin;
+    top: -12vmin; left: -10vmin;
+    animation: drift-a 22s ease-in-out infinite;
+  }
+  .blob-b {
+    width: 38vmin; height: 38vmin;
+    bottom: -14vmin; right: -8vmin;
+    animation: drift-b 27s ease-in-out infinite;
+  }
+
+  @keyframes drift-a {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(6vmin, 8vmin, 0) scale(1.12); }
+  }
+  @keyframes drift-b {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.08); }
+    50%      { transform: translate3d(-7vmin, -6vmin, 0) scale(1); }
+  }
+
+  /* ---- Round furniture -------------------------------------------- */
+  .round-tag {
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-white
+           text-xs font-extrabold uppercase tracking-[0.16em];
+    background: var(--theme, #AF144B);
+  }
+
+  /* Display type scales with the screen — this runs on anything from a
+     laptop to a 65" wall panel. */
+  .ask-title {
+    font-size: clamp(1.75rem, 3.6vw, 3.25rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    @apply text-ink;
+  }
+  .ask-setup {
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    @apply font-semibold mt-3;
+    color: var(--theme, #AF144B);
+  }
+
+  /* ---- Answer cards ------------------------------------------------ */
+  /* One tap commits — so the card has to feel like a button on a console,
+     not a radio input. Chunky, tilts under the finger, pops on commit. */
+  .answer {
+    @apply relative w-full text-left rounded-[1.75rem] bg-surface p-5 sm:p-6
+           border-2 border-transparent select-none overflow-hidden
+           transition-transform duration-150;
+    box-shadow: 0 2px 0 rgba(45, 35, 35, 0.06), 0 14px 30px -18px rgba(45, 35, 35, 0.4);
+  }
+  /* Movement lives in Motion, not here: Motion writes an inline transform for
+     the entrance animation, and an inline style always beats a class. CSS owns
+     colour and border; Motion owns position, scale and opacity. */
+  .answer:hover {
+    border-color: color-mix(in srgb, var(--theme) 35%, transparent);
+  }
+  /* The instant before the screen turns over. */
+  .answer-committed {
+    border-color: var(--theme);
+    background: var(--theme);
+  }
+  .answer-committed .answer-label,
+  .answer-committed .answer-sub {
+    @apply text-white;
+  }
+  .answer-committed .answer-chip {
+    background: rgba(255, 255, 255, 0.22) !important;
+  }
+  .answer-chip {
+    @apply grid place-items-center rounded-2xl shrink-0 transition-colors duration-150;
+    width: 3.25rem; height: 3.25rem;
+    font-size: 1.65rem;
+    background: var(--tint, #F4F3F3);
+  }
+  .answer-label {
+    font-size: clamp(1rem, 1.25vw, 1.3rem);
+    @apply font-bold text-ink leading-snug;
+  }
+  .answer-sub {
+    @apply text-sm sm:text-base text-muted mt-1.5 leading-snug;
+  }
+
+  /* Power cards (Ask 03) go vertical — they read as pick-ups, not sentences. */
+  .answer-power {
+    @apply flex flex-col items-start;
+  }
+  .answer-power .answer-label {
+    font-size: clamp(1.1rem, 1.7vw, 1.6rem);
+    letter-spacing: 0.02em;
+    @apply mt-4;
+  }
+
+  /* ---- Interest tiles (Ask 06) ------------------------------------- */
+  .tile {
+    @apply relative rounded-3xl bg-surface border-2 border-line p-4 text-center
+           transition-all duration-150 select-none;
+    box-shadow: 0 2px 0 rgba(45, 35, 35, 0.05);
+  }
+  .tile:hover {
+    @apply border-faint/60;
+  }
+  .tile-on {
+    color: #fff;
+    border-color: transparent;
+    background: var(--tile, #AF144B);
+    box-shadow: 0 10px 24px -10px var(--tile, #AF144B);
+  }
+  .tile-on .tile-hint { color: rgba(255, 255, 255, 0.82); }
+  .tile-label {
+    @apply block font-extrabold text-sm sm:text-base mt-2 leading-tight tracking-tight;
+  }
+  .tile-hint {
+    @apply block text-xs text-muted mt-1 leading-snug;
+  }
+  .tile-locked { pointer-events: none; }
+
+  /* ---- Progress pips ----------------------------------------------- */
+  .pip {
+    @apply h-2 rounded-full bg-ink/12 transition-all duration-300;
+    width: 1.5rem;
+  }
+  .pip-done { background: var(--theme, #AF144B); }
+  .pip-now {
+    width: 3rem;
+    background: var(--theme, #AF144B);
+  }
+
+  /* ---- The reaction that fires the moment they tap ------------------ */
+  .reaction {
+    @apply fixed left-1/2 bottom-14 z-40 -translate-x-1/2 rounded-full
+           px-7 py-4 text-white font-extrabold whitespace-nowrap;
+    font-size: clamp(1rem, 1.6vw, 1.45rem);
+    background: var(--theme, #2D2323);
+    box-shadow: 0 16px 40px -16px rgba(45, 35, 35, 0.6);
+  }
+
+  /* ---- Result screen ------------------------------------------------ */
+  .type-badge {
+    font-size: clamp(2.1rem, 5.5vw, 4.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    @apply font-extrabold text-ink;
+  }
+  .bar-track {
+    @apply h-2.5 rounded-full bg-ink/10 overflow-hidden;
+  }
+  .bar-fill {
+    @apply h-full rounded-full;
+  }
+  .field-chip {
+    @apply rounded-full px-4 py-2 text-sm sm:text-base font-bold text-white;
+  }
+
+  /* ---- Loader ------------------------------------------------------- */
+  .crunch-dot {
+    @apply w-4 h-4 rounded-full;
+    background: var(--theme, #AF144B);
+  }
+}
+
+/* Short screens — a 1366×768 laptop or a low-mounted panel. Five answers plus
+   the situation have to fit without scrolling, so everything gets denser
+   rather than smaller-and-scrolling. */
+@media (max-height: 960px) {
+  .ask-wrap { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .ask-grid { margin-top: 1rem !important; }
+  .ask-title { font-size: clamp(1.4rem, 2.5vw, 2.1rem); }
+  .ask-setup { font-size: 1rem; margin-top: 0.4rem; }
+
+  .answer { padding: 0.8rem 1rem; border-radius: 1.35rem; }
+  .answer-chip { width: 2.75rem; height: 2.75rem; font-size: 1.4rem; border-radius: 1rem; }
+  .answer-label { font-size: 1rem; }
+  .answer-sub { font-size: 0.8125rem; margin-top: 0.2rem; }
+  .answer-power { padding: 1rem; }
+  .answer-power .answer-label { font-size: 1.05rem; margin-top: 0.7rem; }
+
+  .tile { padding: 0.7rem; }
+  .tile-label { font-size: 0.875rem; margin-top: 0.35rem; }
+  .tile-hint { font-size: 0.7rem; }
+
+  .type-badge { font-size: clamp(1.9rem, 4.2vw, 3.2rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob-a, .blob-b { animation: none; }
+}

@@ -1,3 +1,5 @@
+import { InterestId } from './data/interests';
+
 export type SkillCategory = 
   | 'technical' 
   | 'creative' 
@@ -61,6 +63,8 @@ export interface CareerMatch {
   matchExplanation: string;
   requiredSkillIds: string[];
   primaryInterestIds: string[];
+  /** Ask 06 interest domains this career sits in — drives the interest half of the match score. */
+  interestTags?: InterestId[];
   futureOutlook: 'Explosive Growth' | 'High Impact' | 'Emerging Frontier' | 'Essential Pillar';
   dailyMission: string;
   hybridQuote: string;

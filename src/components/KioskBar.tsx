@@ -1,17 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
 import { isSoundEnabled, setSoundEnabled, playClickSound } from '../utils/audio';
 
 interface KioskBarProps {
   totalXp: number;
   level: number;
+  onStaffGesture: () => void;
 }
 
-const LEVEL_TITLES = ['Curious Explorer', 'Skill Alchemist', 'Future Architect', 'Visionary Pioneer'];
+const LEVEL_TITLES = ['Warming up', 'On a roll', 'Future Ready', 'Absolute legend'];
 
-export const KioskBar: React.FC<KioskBarProps> = ({ totalXp, level }) => {
+export const KioskBar: React.FC<KioskBarProps> = ({ totalXp, level, onStaffGesture }) => {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // Five taps inside two seconds. Silent — a teen who taps the logo twice out
+  // of curiosity gets nothing, and the counter forgets.
+  const taps = useRef<number[]>([]);
+
+  const handleLogoTap = () => {
+    const now = Date.now();
+    taps.current = [...taps.current, now].filter((t) => now - t < 2000);
+    if (taps.current.length >= 5) {
+      taps.current = [];
+      onStaffGesture();
+    }
+  };
 
   useEffect(() => {
     const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -41,9 +54,13 @@ export const KioskBar: React.FC<KioskBarProps> = ({ totalXp, level }) => {
     <header className="shrink-0 border-b border-line bg-surface">
       <div className="max-w-6xl 3xl:max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="w-9 h-9 rounded-xl bg-brand text-white grid place-items-center font-bold text-base shrink-0">
+          <button
+            onClick={handleLogoTap}
+            aria-label="Absa Future Ready Teens"
+            className="w-9 h-9 rounded-xl bg-brand text-white grid place-items-center font-bold text-base shrink-0"
+          >
             ab
-          </span>
+          </button>
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-ink leading-tight truncate">
               Absa Future Ready Teens

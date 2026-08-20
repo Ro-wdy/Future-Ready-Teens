@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Lead database (repo root only — must not match src/data/)
+/data/
