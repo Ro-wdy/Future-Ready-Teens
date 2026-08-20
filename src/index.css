@@ -208,22 +208,22 @@
   }
 }
 
-/* The 16-option question is the tallest screen in the exercise. Anything short
-   of a portrait kiosk drops the answer-card helper lines and tightens the grid
-   so a whole question still fits without scrolling. Tall portrait displays have
-   the room, so they keep the fuller, more explanatory layout. */
-@media (max-height: 1100px) {
-  .pick-sub {
-    display: none;
-  }
+/* Short screens tighten the answer grid so a whole question still fits without
+   scrolling. The helper lines stay — for a 13-year-old they are what make
+   "The Creator" mean something — they just get a little more compact. */
+@media (max-height: 820px) {
   .q-grid {
     gap: 0.5rem;
   }
   .q-grid .pick {
-    padding: 0.75rem;
+    padding: 0.875rem;
   }
   .q-grid .pick-label {
     font-size: 0.9375rem;
     margin-top: 0.5rem;
+  }
+  .q-grid .pick-sub {
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
   }
 }

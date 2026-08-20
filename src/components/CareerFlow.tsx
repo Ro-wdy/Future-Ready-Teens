@@ -1,29 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, ArrowLeft, Check, RotateCcw } from 'lucide-react';
-import { SKILLS_DATA, INTERESTS_DATA, CAREERS_DATA, WORK_STYLES } from '../data/gameData';
+import { ArrowRight, ArrowLeft, Check, RotateCcw, Lightbulb } from 'lucide-react';
+import { INTERESTS_DATA, CAREERS_DATA } from '../data/gameData';
+import { PERSONALITIES, getPersonality } from '../data/personalities';
+import { STICKERS, Sticker, getSticker } from './Stickers';
 import { CareerMatch } from '../types';
 import { playClickSound, playFanfare } from '../utils/audio';
 
-const AVATARS = [
-  { id: 'av-1', emoji: '🧑🏾‍💻', label: 'Tech' },
-  { id: 'av-2', emoji: '🩺', label: 'Health' },
-  { id: 'av-3', emoji: '✈️', label: 'Aviation' },
-  { id: 'av-4', emoji: '👩🏽‍🎨', label: 'Creative' },
-  { id: 'av-5', emoji: '⚖️', label: 'Law' },
-  { id: 'av-6', emoji: '🌱', label: 'Green' },
-  { id: 'av-7', emoji: '🌾', label: 'Agri' },
-  { id: 'av-8', emoji: '🚀', label: 'Leader' },
-];
-
-/** Welcome = 0, four questions = 1–4, result = 5. */
-const QUESTION_COUNT = 4;
-const RESULT_STEP = 5;
+/** Welcome = 0, three questions = 1–3, result = 4. */
+const QUESTION_COUNT = 3;
+const RESULT_STEP = 4;
 
 /** Seconds of no touch on the result screen before the kiosk frees itself up. */
 const IDLE_RESET_SECONDS = 90;
 const IDLE_WARN_AT = 20;
+
+const MAX_PERSONALITIES = 3;
+const MAX_INTERESTS = 2;
 
 interface CareerFlowProps {
   onEarnXp: (amount: number, reason: string) => void;
@@ -37,36 +31,40 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   onOpenCareerDetails,
 }) => {
   const [step, setStep] = useState<number>(0);
-  const [name, setName] = useState<string>('');
-  const [avatar, setAvatar] = useState<string>('🧑🏾‍💻');
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [stickerId, setStickerId] = useState<string>(STICKERS[0].id);
+  const [selectedPersonalities, setSelectedPersonalities] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [selectedWorkStyle, setSelectedWorkStyle] = useState<string>('style-builder');
   const [rewardedSteps, setRewardedSteps] = useState<number[]>([]);
   const [idleLeft, setIdleLeft] = useState<number>(IDLE_RESET_SECONDS);
 
-  const toggleSkill = (skillId: string) => {
+  const togglePersonality = (id: string) => {
     playClickSound();
-    if (selectedSkills.includes(skillId)) {
-      setSelectedSkills(selectedSkills.filter((id) => id !== skillId));
-    } else if (selectedSkills.length < 3) {
-      setSelectedSkills([...selectedSkills, skillId]);
+    if (selectedPersonalities.includes(id)) {
+      setSelectedPersonalities(selectedPersonalities.filter((p) => p !== id));
+    } else if (selectedPersonalities.length < MAX_PERSONALITIES) {
+      setSelectedPersonalities([...selectedPersonalities, id]);
     }
   };
 
-  const toggleInterest = (interestId: string) => {
+  const toggleInterest = (id: string) => {
     playClickSound();
-    if (selectedInterests.includes(interestId)) {
-      setSelectedInterests(selectedInterests.filter((id) => id !== interestId));
-    } else if (selectedInterests.length < 2) {
-      setSelectedInterests([...selectedInterests, interestId]);
+    if (selectedInterests.includes(id)) {
+      setSelectedInterests(selectedInterests.filter((i) => i !== id));
+    } else if (selectedInterests.length < MAX_INTERESTS) {
+      setSelectedInterests([...selectedInterests, id]);
     }
   };
 
-  // Career matches, scored from the answers given
+  const chosenPersonalities = selectedPersonalities
+    .map(getPersonality)
+    .filter((p): p is NonNullable<typeof p> => !!p);
+
+  // Personalities stand in for skills, so the existing career scoring is unchanged.
+  const activeSkillIds = Array.from(new Set(chosenPersonalities.flatMap((p) => p.skillIds)));
+
   const rankedMatches = CAREERS_DATA.map((career) => {
     let score = 0;
-    const matchedSkills = career.requiredSkillIds.filter((id) => selectedSkills.includes(id));
+    const matchedSkills = career.requiredSkillIds.filter((id) => activeSkillIds.includes(id));
     score += (matchedSkills.length / Math.max(1, career.requiredSkillIds.length)) * 60;
 
     const matchedInterests = career.primaryInterestIds.filter((id) => selectedInterests.includes(id));
@@ -82,13 +80,14 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   }).sort((a, b) => b.compatibility - a.compatibility);
 
   const topCareer = rankedMatches[0]?.career;
+  const sticker = getSticker(stickerId) || STICKERS[0];
 
   const finish = () => {
     setStep(RESULT_STEP);
     setIdleLeft(IDLE_RESET_SECONDS);
 
     playFanfare();
-    onEarnXp(500, 'Career Passport unlocked');
+    onEarnXp(500, 'Career match unlocked');
 
     try {
       confetti({
@@ -105,17 +104,13 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   const goNext = () => {
     playClickSound();
 
-    // Each answered question is worth a little XP, once
     if (step >= 1 && step <= QUESTION_COUNT && !rewardedSteps.includes(step)) {
       setRewardedSteps((prev) => [...prev, step]);
       onEarnXp(40, 'Step complete');
     }
 
-    if (step === QUESTION_COUNT) {
-      finish();
-    } else {
-      setStep(step + 1);
-    }
+    if (step === QUESTION_COUNT) finish();
+    else setStep(step + 1);
   };
 
   const goBack = () => {
@@ -125,11 +120,9 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
 
   const restart = useCallback(() => {
     setStep(0);
-    setName('');
-    setAvatar('🧑🏾‍💻');
-    setSelectedSkills([]);
+    setStickerId(STICKERS[0].id);
+    setSelectedPersonalities([]);
     setSelectedInterests([]);
-    setSelectedWorkStyle('style-builder');
     setRewardedSteps([]);
     setIdleLeft(IDLE_RESET_SECONDS);
     onRestart();
@@ -157,12 +150,8 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
     if (step === RESULT_STEP && idleLeft <= 0) restart();
   }, [step, idleLeft, restart]);
 
-  const canAdvance =
-    step === 1 ? name.trim().length > 0 :
-    step === 2 ? selectedSkills.length > 0 :
-    true;
-
-  const nextLabel = step === QUESTION_COUNT ? '✨ Reveal My Career Matches' : 'Continue';
+  const canAdvance = step === 2 ? selectedPersonalities.length > 0 : true;
+  const nextLabel = step === QUESTION_COUNT ? '✨ Show My Careers' : 'Continue';
 
   /* ============================ WELCOME ============================ */
   if (step === 0) {
@@ -176,12 +165,12 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
         >
           <p className="eyebrow">Absa Future Ready Teens</p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-ink mt-4 leading-[1.05]">
-            Careers are built
-            <br /> from skills.
+            What kind of
+            <br /> person are you?
           </h1>
           <p className="text-lg sm:text-xl text-muted mt-6 leading-relaxed">
-            Answer four quick questions about what you're good at and what you love.
-            We'll show you the careers built for you — takes about a minute.
+            Answer three quick questions — no typing, just tap.
+            We'll show you the careers that fit who you already are.
           </p>
 
           <button
@@ -202,7 +191,13 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   /* ============================ RESULT ============================ */
   if (step === RESULT_STEP && topCareer) {
     const top = rankedMatches[0];
-    const runnersUp = rankedMatches.slice(1, 3);
+    const alsoConsider = rankedMatches.slice(1, 6);
+    const lead = chosenPersonalities[0];
+    const personalityNames = chosenPersonalities.map((p) => p.name.replace('The ', ''));
+    const label =
+      personalityNames.length > 1
+        ? `${personalityNames.slice(0, -1).join(', ')} + ${personalityNames[personalityNames.length - 1]}`
+        : personalityNames[0];
 
     return (
       <>
@@ -213,85 +208,111 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="max-w-5xl mx-auto px-5 sm:px-8 py-8 sm:py-10 space-y-8"
           >
-            {/* Who this is */}
-            <div className="flex items-center gap-4">
-              <span className="w-14 h-14 rounded-2xl bg-brand-tint grid place-items-center text-3xl shrink-0">
-                {avatar}
-              </span>
+            {/* Who they said they are */}
+            <div className="flex items-center gap-5">
+              <Sticker spec={sticker} className="w-20 h-20 shrink-0" />
               <div className="min-w-0">
-                <p className="eyebrow">Your career match</p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-ink mt-1">
-                  {name.trim()}, here's your match
-                </h2>
-              </div>
-            </div>
-
-            {/* Top match */}
-            <button
-              onClick={() => onOpenCareerDetails(topCareer)}
-              className="panel w-full p-6 sm:p-8 text-left ring-2 ring-brand hover:shadow-lift transition-all group"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-xs font-semibold text-brand bg-brand-tint px-3 py-1.5 rounded-full">
-                  Top match
-                </span>
-                <span className="text-3xl font-bold text-brand tabular-nums">{top.compatibility}%</span>
-              </div>
-
-              <h3 className="text-2xl sm:text-3xl font-bold text-ink mt-4 leading-tight">
-                {topCareer.title}
-              </h3>
-              <p className="meta mt-1.5">{topCareer.absaPillar}</p>
-              <p className="text-base text-muted mt-4 leading-relaxed">{topCareer.tagline}</p>
-
-              <div className="flex flex-wrap gap-2 mt-5">
-                {topCareer.requiredSkillIds.map((sId) => {
-                  const s = SKILLS_DATA.find((sk) => sk.id === sId);
-                  const isMatched = selectedSkills.includes(sId);
-                  return (
-                    <span
-                      key={sId}
-                      className={`text-xs px-2.5 py-1.5 rounded-full font-medium ${
-                        isMatched ? 'bg-grass-tint text-grass' : 'bg-sunken text-muted'
-                      }`}
-                    >
-                      {s?.name.split(' ')[0]}{isMatched ? ' ✓' : ''}
-                    </span>
-                  );
-                })}
-              </div>
-
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand mt-6 group-hover:gap-2.5 transition-all">
-                See the full roadmap
-                <ArrowRight className="w-4 h-4" />
-              </span>
-            </button>
-
-            {/* Runners up */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {runnersUp.map((item) => (
-                <button
-                  key={item.career.id}
-                  onClick={() => onOpenCareerDetails(item.career)}
-                  className="panel p-5 text-left hover:shadow-lift transition-all group"
-                >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="meta">{item.career.absaPillar}</span>
-                    <span className="text-lg font-bold text-ink tabular-nums shrink-0">
-                      {item.compatibility}%
-                    </span>
-                  </div>
-                  <h4 className="font-semibold text-ink text-lg mt-2 leading-snug group-hover:text-brand transition-colors">
-                    {item.career.title}
-                  </h4>
-                  <p className="text-sm text-muted mt-2 leading-relaxed line-clamp-2">
-                    {item.career.tagline}
+                <p className="eyebrow">You're a</p>
+                <h2 className="text-2xl sm:text-4xl font-bold text-ink mt-1 leading-tight">{label}</h2>
+                {lead && (
+                  <p className="text-base text-muted mt-2">
+                    Best at <span className="text-ink font-semibold">{lead.strength}</span>.
                   </p>
-                </button>
-              ))}
+                )}
+              </div>
             </div>
 
-            {/* Starter kit */}
+            {/* Advice, earned by the personalities they picked */}
+            <div className="panel p-6 sm:p-8">
+              <div className="flex items-center gap-2.5">
+                <Lightbulb className="w-5 h-5 text-accent shrink-0" />
+                <h3 className="text-lg font-bold text-ink">Your career advice</h3>
+              </div>
+              <div className="mt-4 space-y-4">
+                {chosenPersonalities.map((p) => (
+                  <div key={p.id} className="flex items-start gap-3.5">
+                    <span className="text-2xl shrink-0 leading-none mt-0.5">{p.emoji}</span>
+                    <p className="text-base text-ink leading-relaxed">{p.advice}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Best fit */}
+            <div>
+              <h3 className="text-xl font-bold text-ink mb-4">Your best career match</h3>
+              <button
+                onClick={() => onOpenCareerDetails(topCareer)}
+                className="panel w-full p-6 sm:p-8 text-left ring-2 ring-brand hover:shadow-lift transition-all group"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-xs font-semibold text-brand bg-brand-tint px-3 py-1.5 rounded-full">
+                    Top match
+                  </span>
+                  <span className="text-3xl font-bold text-brand tabular-nums">{top.compatibility}%</span>
+                </div>
+
+                <h4 className="text-2xl sm:text-3xl font-bold text-ink mt-4 leading-tight">
+                  {topCareer.title}
+                </h4>
+                <p className="meta mt-1.5">{topCareer.absaPillar}</p>
+                <p className="text-base text-muted mt-4 leading-relaxed">{topCareer.tagline}</p>
+
+                <p className="text-sm text-ink mt-4 leading-relaxed">
+                  <span className="font-semibold">Why it fits you · </span>
+                  {topCareer.matchExplanation}
+                </p>
+
+                {topCareer.subjectsNeeded && (
+                  <p className="text-sm text-muted mt-3">
+                    <span className="text-faint">Subjects to take · </span>
+                    {topCareer.subjectsNeeded.join(' · ')}
+                  </p>
+                )}
+
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand mt-6 group-hover:gap-2.5 transition-all">
+                  See the full roadmap
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </button>
+            </div>
+
+            {/* Everything else they could do */}
+            <div>
+              <h3 className="text-xl font-bold text-ink">Other careers you could do</h3>
+              <p className="text-sm text-muted mt-1.5">
+                Tap any of these to see the subjects and the steps to get there.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+                {alsoConsider.map((item) => (
+                  <button
+                    key={item.career.id}
+                    onClick={() => onOpenCareerDetails(item.career)}
+                    className="panel p-5 text-left hover:shadow-lift transition-all group flex flex-col"
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="meta truncate">{item.career.absaPillar}</span>
+                      <span className="text-base font-bold text-ink tabular-nums shrink-0">
+                        {item.compatibility}%
+                      </span>
+                    </div>
+                    <h4 className="font-semibold text-ink text-base mt-2 leading-snug group-hover:text-brand transition-colors">
+                      {item.career.title}
+                    </h4>
+                    <p className="text-sm text-muted mt-2 leading-relaxed line-clamp-2 flex-1">
+                      {item.career.tagline}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand mt-4 group-hover:gap-2 transition-all">
+                      How to get there
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* First steps */}
             <div className="panel p-6 sm:p-8">
               <h3 className="text-xl font-bold text-ink">Start here, in high school</h3>
               <p className="text-sm text-muted mt-1.5">
@@ -311,7 +332,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
           </motion.div>
         </div>
 
-        {/* Result actions */}
         <footer className="shrink-0 border-t border-line bg-surface">
           <div className="max-w-5xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
             <div className="min-w-0">
@@ -324,11 +344,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
               )}
             </div>
 
-            <button
-              id="btn-restart"
-              onClick={restart}
-              className="btn btn-primary btn-touch shrink-0"
-            >
+            <button id="btn-restart" onClick={restart} className="btn btn-primary btn-touch shrink-0">
               <RotateCcw className="w-5 h-5" />
               <span>Start again</span>
             </button>
@@ -341,7 +357,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   /* ============================ QUESTIONS ============================ */
   return (
     <>
-      {/* Progress */}
       <div className="shrink-0 px-5 sm:px-8 pt-4">
         <div className="max-w-6xl mx-auto">
           <div className="rail">
@@ -365,78 +380,75 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="w-full max-w-6xl mx-auto my-auto px-5 sm:px-8 py-5 sm:py-7"
           >
-            {/* ---- Q1: identity ---- */}
+            {/* ---- Q1: pick a sticker ---- */}
             {step === 1 && (
               <div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink leading-tight">
-                  First — what should we call you?
+                  Pick your sticker
                 </h2>
                 <p className="text-base text-muted mt-2.5">
-                  Just so your results feel like yours.
+                  This one's just for fun — choose the character that feels like you.
                 </p>
 
-                <input
-                  id="input-teen-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  autoComplete="off"
-                  className="field max-w-xl mt-8 text-xl py-5"
-                />
-
-                <p className="meta mt-10 mb-4">Pick an avatar</p>
-                <div className="flex flex-wrap gap-3">
-                  {AVATARS.map((av) => (
-                    <button
-                      key={av.id}
-                      type="button"
-                      onClick={() => { playClickSound(); setAvatar(av.emoji); }}
-                      className={`w-20 h-20 rounded-2xl text-4xl grid place-items-center transition-all duration-150 active:scale-90 ${
-                        avatar === av.emoji
-                          ? 'bg-brand-tint ring-2 ring-brand'
-                          : 'bg-sunken hover:bg-line'
-                      }`}
-                      title={av.label}
-                    >
-                      {av.emoji}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mt-6">
+                  {STICKERS.map((s) => {
+                    const isSelected = stickerId === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => { playClickSound(); setStickerId(s.id); }}
+                        className={`rounded-3xl p-3 transition-all duration-150 active:scale-95 ${
+                          isSelected ? 'bg-brand-tint ring-2 ring-brand' : 'bg-sunken hover:bg-line'
+                        }`}
+                      >
+                        <Sticker spec={s} className="w-full h-auto" />
+                        <span
+                          className={`block text-sm font-semibold mt-2 ${
+                            isSelected ? 'text-brand' : 'text-muted'
+                          }`}
+                        >
+                          {s.name}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* ---- Q2: superpowers ---- */}
+            {/* ---- Q2: personalities ---- */}
             {step === 2 && (
               <div>
                 <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink leading-tight">
-                    What are your superpowers?
+                    Which of these sound like you?
                   </h2>
-                  <span className={`text-lg font-semibold ${selectedSkills.length ? 'text-brand' : 'text-faint'}`}>
-                    {selectedSkills.length}/3
+                  <span
+                    className={`text-lg font-semibold ${
+                      selectedPersonalities.length ? 'text-brand' : 'text-faint'
+                    }`}
+                  >
+                    {selectedPersonalities.length}/{MAX_PERSONALITIES}
                   </span>
                 </div>
                 <p className="text-base text-muted mt-2.5">
-                  Pick up to three things you're good at, or want to be.
+                  Pick up to three. There are no wrong answers.
                 </p>
 
                 <div className="q-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-5">
-                  {SKILLS_DATA.map((skill) => {
-                    const isSelected = selectedSkills.includes(skill.id);
-                    const isMaxed = !isSelected && selectedSkills.length >= 3;
+                  {PERSONALITIES.map((p) => {
+                    const isSelected = selectedPersonalities.includes(p.id);
+                    const isMaxed = !isSelected && selectedPersonalities.length >= MAX_PERSONALITIES;
                     return (
                       <button
-                        key={skill.id}
+                        key={p.id}
                         type="button"
-                        onClick={() => toggleSkill(skill.id)}
+                        onClick={() => togglePersonality(p.id)}
                         className={`pick p-4 sm:p-5 ${isSelected ? 'pick-on' : ''} ${isMaxed ? 'opacity-40' : ''}`}
                       >
                         <span className="flex items-start justify-between gap-2">
-                          <span
-                            className="w-3 h-3 rounded-full mt-1 shrink-0"
-                            style={{ backgroundColor: skill.color }}
-                          />
+                          <span className="text-3xl leading-none">{p.emoji}</span>
                           {isSelected && (
                             <span className="w-6 h-6 rounded-full bg-brand text-white grid place-items-center shrink-0">
                               <Check className="w-3.5 h-3.5" strokeWidth={3} />
@@ -444,9 +456,9 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
                           )}
                         </span>
                         <span className="pick-label block font-semibold text-ink text-base mt-3 leading-snug">
-                          {skill.name}
+                          {p.name}
                         </span>
-                        <span className="pick-sub">{skill.tagline}</span>
+                        <span className="pick-sub">{p.blurb}</span>
                       </button>
                     );
                   })}
@@ -459,20 +471,24 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
               <div>
                 <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink leading-tight">
-                    What are you curious about?
+                    What are you into?
                   </h2>
-                  <span className={`text-lg font-semibold ${selectedInterests.length ? 'text-brand' : 'text-faint'}`}>
-                    {selectedInterests.length}/2
+                  <span
+                    className={`text-lg font-semibold ${
+                      selectedInterests.length ? 'text-brand' : 'text-faint'
+                    }`}
+                  >
+                    {selectedInterests.length}/{MAX_INTERESTS}
                   </span>
                 </div>
                 <p className="text-base text-muted mt-2.5">
-                  Choose one or two worlds you'd happily get lost in.
+                  Choose one or two you'd happily spend a whole weekend on.
                 </p>
 
                 <div className="q-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-5">
                   {INTERESTS_DATA.map((interest) => {
                     const isSelected = selectedInterests.includes(interest.id);
-                    const isMaxed = !isSelected && selectedInterests.length >= 2;
+                    const isMaxed = !isSelected && selectedInterests.length >= MAX_INTERESTS;
                     return (
                       <button
                         key={interest.id}
@@ -495,52 +511,10 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
                 </div>
               </div>
             )}
-
-            {/* ---- Q4: impact persona ---- */}
-            {step === 4 && (
-              <div>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink leading-tight">
-                  How do you want to make impact?
-                </h2>
-                <p className="text-base text-muted mt-2.5">
-                  No wrong answer — pick the one that sounds most like you.
-                </p>
-
-                <div className="q-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
-                  {WORK_STYLES.map((style) => {
-                    const isSelected = selectedWorkStyle === style.id;
-                    return (
-                      <button
-                        key={style.id}
-                        type="button"
-                        onClick={() => { playClickSound(); setSelectedWorkStyle(style.id); }}
-                        className={`pick p-6 flex items-start gap-4 ${isSelected ? 'pick-on' : ''}`}
-                      >
-                        <span className="text-4xl shrink-0">{style.emoji}</span>
-                        <span className="min-w-0">
-                          <span className="block font-semibold text-ink text-lg leading-snug">
-                            {style.title.replace('The ', '')}
-                          </span>
-                          <span className="block text-sm text-muted mt-1.5 leading-relaxed">
-                            {style.tagline}
-                          </span>
-                        </span>
-                        {isSelected && (
-                          <span className="w-6 h-6 rounded-full bg-brand text-white grid place-items-center shrink-0 ml-auto">
-                            <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Step navigation */}
       <footer className="shrink-0 border-t border-line bg-surface">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
           <button id="btn-back" onClick={goBack} className="btn btn-quiet btn-touch">
