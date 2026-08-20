@@ -2,22 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { ArrowRight, ArrowLeft, Check, RotateCcw, Lightbulb } from 'lucide-react';
-import { INTERESTS_DATA, CAREERS_DATA } from '../data/gameData';
+import { CAREERS_DATA } from '../data/gameData';
 import { PERSONALITIES, getPersonality } from '../data/personalities';
 import { STICKERS, Sticker, getSticker } from './Stickers';
 import { CareerMatch } from '../types';
 import { playClickSound, playFanfare } from '../utils/audio';
 
-/** Welcome = 0, three questions = 1–3, result = 4. */
-const QUESTION_COUNT = 3;
-const RESULT_STEP = 4;
+/** Welcome = 0, two questions = 1–2, result = 3. */
+const QUESTION_COUNT = 2;
+const RESULT_STEP = 3;
 
 /** Seconds of no touch on the result screen before the kiosk frees itself up. */
 const IDLE_RESET_SECONDS = 90;
 const IDLE_WARN_AT = 20;
 
 const MAX_PERSONALITIES = 3;
-const MAX_INTERESTS = 2;
 
 interface CareerFlowProps {
   onEarnXp: (amount: number, reason: string) => void;
@@ -33,7 +32,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
   const [step, setStep] = useState<number>(0);
   const [stickerId, setStickerId] = useState<string>(STICKERS[0].id);
   const [selectedPersonalities, setSelectedPersonalities] = useState<string[]>([]);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [rewardedSteps, setRewardedSteps] = useState<number[]>([]);
   const [idleLeft, setIdleLeft] = useState<number>(IDLE_RESET_SECONDS);
 
@@ -46,36 +44,29 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
     }
   };
 
-  const toggleInterest = (id: string) => {
-    playClickSound();
-    if (selectedInterests.includes(id)) {
-      setSelectedInterests(selectedInterests.filter((i) => i !== id));
-    } else if (selectedInterests.length < MAX_INTERESTS) {
-      setSelectedInterests([...selectedInterests, id]);
-    }
-  };
-
   const chosenPersonalities = selectedPersonalities
     .map(getPersonality)
     .filter((p): p is NonNullable<typeof p> => !!p);
 
-  // Personalities stand in for skills, so the existing career scoring is unchanged.
-  const activeSkillIds = Array.from(new Set(chosenPersonalities.flatMap((p) => p.skillIds)));
+  // Personalities stand in for skills, so the career data needs no changes.
+  // The first personality picked counts for most, which keeps the result
+  // personal and stops several careers landing on an identical score.
+  const PICK_WEIGHTS = [1, 0.88, 0.76];
+  const skillWeight = new Map<string, number>();
+  chosenPersonalities.forEach((p, i) => {
+    const w = PICK_WEIGHTS[i] ?? 0.7;
+    p.skillIds.forEach((id) => skillWeight.set(id, Math.max(skillWeight.get(id) ?? 0, w)));
+  });
 
   const rankedMatches = CAREERS_DATA.map((career) => {
-    let score = 0;
-    const matchedSkills = career.requiredSkillIds.filter((id) => activeSkillIds.includes(id));
-    score += (matchedSkills.length / Math.max(1, career.requiredSkillIds.length)) * 60;
-
-    const matchedInterests = career.primaryInterestIds.filter((id) => selectedInterests.includes(id));
-    score += (matchedInterests.length / Math.max(1, career.primaryInterestIds.length)) * 30;
-
-    score += 10;
+    const weighted = career.requiredSkillIds.reduce((sum, id) => sum + (skillWeight.get(id) ?? 0), 0);
+    const matchedSkillsCount = career.requiredSkillIds.filter((id) => skillWeight.has(id)).length;
+    const score = (weighted / Math.max(1, career.requiredSkillIds.length)) * 85 + 10;
 
     return {
       career,
       compatibility: Math.min(99, Math.max(45, Math.round(score))),
-      matchedSkillsCount: matchedSkills.length,
+      matchedSkillsCount,
     };
   }).sort((a, b) => b.compatibility - a.compatibility);
 
@@ -122,7 +113,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
     setStep(0);
     setStickerId(STICKERS[0].id);
     setSelectedPersonalities([]);
-    setSelectedInterests([]);
     setRewardedSteps([]);
     setIdleLeft(IDLE_RESET_SECONDS);
     onRestart();
@@ -169,7 +159,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
             <br /> person are you?
           </h1>
           <p className="text-lg sm:text-xl text-muted mt-6 leading-relaxed">
-            Answer three quick questions — no typing, just tap.
+            Answer two quick questions — no typing, just tap.
             We'll show you the careers that fit who you already are.
           </p>
 
@@ -314,7 +304,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
 
             {/* First steps */}
             <div className="panel p-6 sm:p-8">
-              <h3 className="text-xl font-bold text-ink">Start here, in high school</h3>
+              <h3 className="text-xl font-bold text-ink">Start here</h3>
               <p className="text-sm text-muted mt-1.5">
                 Three things you can do now towards {topCareer.title}.
               </p>
@@ -390,7 +380,7 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
                   This one's just for fun — choose the character that feels like you.
                 </p>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 mt-6">
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mt-8">
                   {STICKERS.map((s) => {
                     const isSelected = stickerId === s.id;
                     return (
@@ -398,18 +388,12 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
                         key={s.id}
                         type="button"
                         onClick={() => { playClickSound(); setStickerId(s.id); }}
-                        className={`rounded-3xl p-3 transition-all duration-150 active:scale-95 ${
+                        aria-label={`Sticker ${s.name}`}
+                        className={`rounded-3xl p-2.5 transition-all duration-150 active:scale-95 ${
                           isSelected ? 'bg-brand-tint ring-2 ring-brand' : 'bg-sunken hover:bg-line'
                         }`}
                       >
                         <Sticker spec={s} className="w-full h-auto" />
-                        <span
-                          className={`block text-sm font-semibold mt-2 ${
-                            isSelected ? 'text-brand' : 'text-muted'
-                          }`}
-                        >
-                          {s.name}
-                        </span>
                       </button>
                     );
                   })}
@@ -466,51 +450,6 @@ export const CareerFlow: React.FC<CareerFlowProps> = ({
               </div>
             )}
 
-            {/* ---- Q3: passions ---- */}
-            {step === 3 && (
-              <div>
-                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink leading-tight">
-                    What are you into?
-                  </h2>
-                  <span
-                    className={`text-lg font-semibold ${
-                      selectedInterests.length ? 'text-brand' : 'text-faint'
-                    }`}
-                  >
-                    {selectedInterests.length}/{MAX_INTERESTS}
-                  </span>
-                </div>
-                <p className="text-base text-muted mt-2.5">
-                  Choose one or two you'd happily spend a whole weekend on.
-                </p>
-
-                <div className="q-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-5">
-                  {INTERESTS_DATA.map((interest) => {
-                    const isSelected = selectedInterests.includes(interest.id);
-                    const isMaxed = !isSelected && selectedInterests.length >= MAX_INTERESTS;
-                    return (
-                      <button
-                        key={interest.id}
-                        type="button"
-                        onClick={() => toggleInterest(interest.id)}
-                        className={`pick p-4 sm:p-5 flex items-center gap-3.5 ${isSelected ? 'pick-on' : ''} ${isMaxed ? 'opacity-40' : ''}`}
-                      >
-                        <span className="text-3xl shrink-0">{interest.emoji}</span>
-                        <span className="pick-label font-semibold text-ink text-base leading-snug min-w-0">
-                          {interest.name.split('&')[0].trim()}
-                        </span>
-                        {isSelected && (
-                          <span className="w-6 h-6 rounded-full bg-brand text-white grid place-items-center shrink-0 ml-auto">
-                            <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>

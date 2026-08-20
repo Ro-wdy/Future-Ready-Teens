@@ -25,19 +25,19 @@ export interface StickerSpec {
   accessory?: Accessory;
 }
 
+/**
+ * Six characters, balanced across gender presentation and skin tone, plus one
+ * non-human for anyone who would rather not pick a person. The renderer below
+ * still supports the other hair types (locs, bun, bob, cap) and the robot and
+ * alien kinds, so extending this list back out is a one-line change.
+ */
 export const STICKERS: StickerSpec[] = [
   { id: 'st-zola',  name: 'Zola',  bg: '#FFE3AE', kind: 'human', skin: '#8D5524', hair: 'afro',   hairColor: '#241C1C', shirt: '#AF144B', accessory: 'earrings' },
   { id: 'st-kito',  name: 'Kito',  bg: '#CDE7F5', kind: 'human', skin: '#5C3317', hair: 'fade',   hairColor: '#1F1A1A', shirt: '#0074A6', accessory: 'headphones' },
   { id: 'st-amara', name: 'Amara', bg: '#FBD3E0', kind: 'human', skin: '#A56A3A', hair: 'braids', hairColor: '#2A1F1F', shirt: '#7A3FA8', accessory: 'none' },
   { id: 'st-neo',   name: 'Neo',   bg: '#D5F0DC', kind: 'human', skin: '#C68642', hair: 'curly',  hairColor: '#3B2413', shirt: '#0B7A55', accessory: 'glasses' },
   { id: 'st-sana',  name: 'Sana',  bg: '#E2DCF7', kind: 'human', skin: '#D9A066', hair: 'scarf',  hairColor: '#5B3FA0', shirt: '#3F2E82', accessory: 'none' },
-  { id: 'st-tama',  name: 'Tama',  bg: '#FFD9C2', kind: 'human', skin: '#6B4226', hair: 'locs',   hairColor: '#241C1C', shirt: '#FA551E', accessory: 'none' },
-  { id: 'st-mimi',  name: 'Mimi',  bg: '#C9EFEA', kind: 'human', skin: '#F0C39B', hair: 'bun',    hairColor: '#8A4B2A', shirt: '#0B7A55', accessory: 'freckles' },
-  { id: 'st-jax',   name: 'Jax',   bg: '#FFD2D2', kind: 'human', skin: '#B87B4B', hair: 'cap',    hairColor: '#1F1A1A', shirt: '#AF144B', accessory: 'none' },
-  { id: 'st-suki',  name: 'Suki',  bg: '#DCEBFF', kind: 'human', skin: '#F2CDA5', hair: 'bob',    hairColor: '#141414', shirt: '#0074A6', accessory: 'earrings' },
-  { id: 'st-bolt',  name: 'Bolt',  bg: '#DCE3EC', kind: 'robot' },
   { id: 'st-pixel', name: 'Pixel', bg: '#FFE0B8', kind: 'cat' },
-  { id: 'st-nova',  name: 'Nova',  bg: '#E7DCFA', kind: 'alien' },
 ];
 
 export const getSticker = (id: string) => STICKERS.find((s) => s.id === id);
