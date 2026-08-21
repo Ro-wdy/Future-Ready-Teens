@@ -1,3 +1,7 @@
+// Must be first: db.ts reads DATA_DIR the moment it is imported, and ESM
+// evaluates imports in source order. Real environment variables always win
+// over .env, so a cloud host's config is never overwritten by a stray file.
+import 'dotenv/config';
 import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -13,7 +17,8 @@ const HOST = process.env.HOST || '0.0.0.0';
  * Staff key guards the leads. It is not a login — it stops a curious teen
  * poking /staff on the panel, which is all it needs to do on a closed stand.
  */
-const STAFF_KEY = process.env.STAFF_KEY || 'absa2026';
+const DEFAULT_STAFF_KEY = 'absa2026';
+const STAFF_KEY = process.env.STAFF_KEY || DEFAULT_STAFF_KEY;
 
 const app = express();
 app.use(express.json({ limit: '64kb' }));
@@ -151,6 +156,13 @@ if (fs.existsSync(DIST)) {
       <h1>The app has not been built yet</h1>
       <p class="muted">Run <code>npm run build</code>, then restart this server.</p>
       <p class="muted">During development run <code>npm run dev</code> instead &mdash; it proxies the API here.</p>`)));
+}
+
+if (STAFF_KEY === DEFAULT_STAFF_KEY) {
+  console.warn(
+    '\n  \x1b[33m!\x1b[0m STAFF_KEY is still the default. Anyone who guesses it can read every lead.\n'
+    + '    Set STAFF_KEY in .env before the event.\n',
+  );
 }
 
 app.listen(PORT, HOST, () => {
